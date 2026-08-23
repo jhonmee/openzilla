@@ -98,7 +98,15 @@ fun AddHabitScreen(editingHabitId: Long?, onDone: () -> Unit, onCancel: () -> Un
             TopAppBar(
                 title = { Text(if (viewModel.isEditing && step == WizardStep.NAME_ICON) "Editar hábito" else step.title) },
                 navigationIcon = {
-                    IconButton(onClick = { if (stepIndex > 0) stepIndex-- else onCancel() }) {
+                    // Al crear un hábito, "atrás" desde el primer paso vuelve a la lista de
+                    // categorías (de donde se venía), no cierra el asistente entero.
+                    IconButton(onClick = {
+                        when {
+                            stepIndex > 0 -> stepIndex--
+                            !viewModel.isEditing -> showCategoryPicker = true
+                            else -> onCancel()
+                        }
+                    }) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Atrás")
                     }
                 }
