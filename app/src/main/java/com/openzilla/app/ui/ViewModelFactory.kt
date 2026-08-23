@@ -1,6 +1,7 @@
 package com.openzilla.app.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisallowComposableCalls
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
@@ -17,7 +18,9 @@ fun openZillaApp(): OpenZillaApp = LocalContext.current.applicationContext as Op
  * without pulling in a DI framework for an app this size.
  */
 @Composable
-inline fun <reified VM : ViewModel> rememberOpenZillaViewModel(crossinline create: (OpenZillaApp) -> VM): VM {
+inline fun <reified VM : ViewModel> rememberOpenZillaViewModel(
+    crossinline create: @DisallowComposableCalls (OpenZillaApp) -> VM
+): VM {
     val app = openZillaApp()
     val factory = remember(app) {
         object : ViewModelProvider.Factory {
