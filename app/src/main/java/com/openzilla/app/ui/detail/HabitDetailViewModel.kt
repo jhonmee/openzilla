@@ -1,7 +1,9 @@
 package com.openzilla.app.ui.detail
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.openzilla.app.R
 import com.openzilla.app.data.HabitEntity
 import com.openzilla.app.data.HabitRepository
 import com.openzilla.app.data.HistoryEntity
@@ -13,7 +15,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class HabitDetailViewModel(private val repository: HabitRepository, private val habitId: Long) : ViewModel() {
+class HabitDetailViewModel(
+    private val context: Context,
+    private val repository: HabitRepository,
+    private val habitId: Long
+) : ViewModel() {
 
     // Arranca con lo que ya se sabe del hábito (viniendo de la lista, siempre hay algo), así
     // la pantalla se dibuja completa desde el primer frame.
@@ -35,20 +41,20 @@ class HabitDetailViewModel(private val repository: HabitRepository, private val 
         val trimmed = text.trim()
         if (trimmed.isEmpty()) return
         viewModelScope.launch {
-            repository.addReason(habitId, trimmed).onFailure { _errors.value = it.message ?: "No se pudo guardar el motivo" }
+            repository.addReason(habitId, trimmed).onFailure { _errors.value = it.message ?: context.getString(R.string.error_reason_failed) }
         }
     }
 
     fun deleteReason(reason: ReasonEntity) {
         viewModelScope.launch {
-            repository.deleteReason(reason).onFailure { _errors.value = it.message ?: "No se pudo eliminar" }
+            repository.deleteReason(reason).onFailure { _errors.value = it.message ?: context.getString(R.string.error_delete_failed) }
         }
     }
 
     fun resetHabit() {
         val current = habit.value ?: return
         viewModelScope.launch {
-            repository.resetHabit(current, System.currentTimeMillis()).onFailure { _errors.value = it.message ?: "No se pudo reiniciar" }
+            repository.resetHabit(current, System.currentTimeMillis()).onFailure { _errors.value = it.message ?: context.getString(R.string.error_reset_failed) }
         }
     }
 
@@ -63,14 +69,14 @@ class HabitDetailViewModel(private val repository: HabitRepository, private val 
         val lower = minOf(current.startedAt, now)
         val at = millis.coerceIn(lower, now)
         viewModelScope.launch {
-            repository.resetHabit(current, at).onFailure { _errors.value = it.message ?: "No se pudo registrar la recaída" }
+            repository.resetHabit(current, at).onFailure { _errors.value = it.message ?: context.getString(R.string.error_relapse_failed) }
         }
     }
 
     fun deleteHabit(onDone: () -> Unit) {
         val current = habit.value ?: return
         viewModelScope.launch {
-            repository.deleteHabit(current).onSuccess { onDone() }.onFailure { _errors.value = it.message ?: "No se pudo eliminar" }
+            repository.deleteHabit(current).onSuccess { onDone() }.onFailure { _errors.value = it.message ?: context.getString(R.string.error_delete_failed) }
         }
     }
 }

@@ -12,6 +12,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.openzilla.app.R
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,6 +27,7 @@ import com.openzilla.app.data.HabitEntity
 import com.openzilla.app.data.HistoryEntity
 import com.openzilla.app.ui.components.CalendarGrid
 import com.openzilla.app.ui.components.ConfirmDialog
+import com.openzilla.app.ui.goalLabel
 import com.openzilla.app.ui.rememberHaptics
 import com.openzilla.app.ui.components.ProgressWaveBar
 import com.openzilla.app.ui.components.rememberNowTicker
@@ -33,7 +36,6 @@ import com.openzilla.app.util.currentGoalHours
 import com.openzilla.app.util.dayStartOf
 import com.openzilla.app.util.elapsedParts
 import com.openzilla.app.util.formatDurationShort
-import com.openzilla.app.util.goalLabel
 import com.openzilla.app.util.goalPercentText
 import com.openzilla.app.util.goalProgress
 import com.openzilla.app.util.goalRemainingMillis
@@ -67,14 +69,14 @@ fun SummaryTab(
     val dayMap = remember(habit.id, habit.startedAt, history, todayStart) {
         buildHabitDayMap(habit.startedAt, history.map { it.streakStart to it.streakEnd }, todayStart)
     }
-    val dateFormat = remember { SimpleDateFormat("d 'de' MMMM 'de' yyyy", Locale("es")) }
+    val dateFormat = remember { SimpleDateFormat("d MMMM yyyy", Locale.getDefault()) }
 
     LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         item {
             val now = nowState.value
             val parts = elapsedParts(habit.startedAt, now)
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                Text("Tiempo sin recaídas", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.summary_time_clean), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(
                     buildString {
                         if (parts.days > 0) append("${parts.days}d ")
@@ -92,7 +94,7 @@ fun SummaryTab(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        "Meta: ${goalLabel(currentGoalHours(habit.startedAt, habit.goalHours, now))}",
+                        stringResource(R.string.home_goal, goalLabel(currentGoalHours(habit.startedAt, habit.goalHours, now))),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
@@ -104,15 +106,15 @@ fun SummaryTab(
                 }
                 Text(
                     goalRemainingMillis(habit.startedAt, habit.goalHours, now)
-                        ?.let { "Te faltan ${formatDurationShort(it)}" }
-                        ?: "¡Meta máxima alcanzada!",
+                        ?.let { stringResource(R.string.summary_remaining, formatDurationShort(it)) }
+                        ?: stringResource(R.string.summary_max_goal),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 2.dp)
                 )
 
                 OutlinedButton(onClick = { haptics.tap(); onResetRequested() }, modifier = Modifier.padding(top = 20.dp)) {
-                    Text("Registrar recaída ahora")
+                    Text(stringResource(R.string.summary_register_relapse_now))
                 }
             }
         }
@@ -132,9 +134,9 @@ fun SummaryTab(
 
     pendingRelapseDay?.let { day ->
         ConfirmDialog(
-            title = "Registrar recaída",
-            message = "Se marcará una recaída el ${dateFormat.format(Date(day))}. La racha actual se guardará en el historial y el contador arrancará desde ese día.",
-            confirmLabel = "Registrar",
+            title = stringResource(R.string.relapse_title),
+            message = stringResource(R.string.relapse_message, dateFormat.format(Date(day))),
+            confirmLabel = stringResource(R.string.relapse_confirm),
             onConfirm = { haptics.confirm(); onRelapseAt(middayOf(day)); pendingRelapseDay = null },
             onDismiss = { pendingRelapseDay = null }
         )

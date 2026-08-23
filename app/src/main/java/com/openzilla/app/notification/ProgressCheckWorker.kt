@@ -28,7 +28,7 @@ class ProgressCheckWorker(context: Context, params: WorkerParameters) : Coroutin
                 notify(
                     applicationContext,
                     applicationContext.getString(R.string.notif_progress_title),
-                    applicationContext.getString(R.string.notif_progress_body, habit.name, justCrossed.label)
+                    applicationContext.getString(R.string.notif_progress_body, habit.name, applicationContext.getString(justCrossed.labelRes))
                 )
             }
         }

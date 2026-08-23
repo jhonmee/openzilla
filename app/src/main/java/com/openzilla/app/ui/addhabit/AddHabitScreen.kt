@@ -31,6 +31,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.openzilla.app.R
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -43,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import com.openzilla.app.data.HabitCostType
 import com.openzilla.app.ui.components.ConfirmDialog
 import com.openzilla.app.ui.rememberOpenZillaViewModel
+import com.openzilla.app.ui.goalLabel
 import com.openzilla.app.ui.rememberHaptics
 import com.openzilla.app.util.HabitCategory
 import com.openzilla.app.util.SELECTABLE_GOALS
@@ -51,11 +54,11 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-private enum class WizardStep(val title: String) {
-    NAME_ICON("Nombre e icono"),
-    TYPE("Tipo de hábito"),
-    DATE("Última vez"),
-    GOAL("Tu primera meta")
+private enum class WizardStep(val titleRes: Int) {
+    NAME_ICON(R.string.wizard_name_icon),
+    TYPE(R.string.wizard_type),
+    DATE(R.string.wizard_date),
+    GOAL(R.string.wizard_goal)
 }
 
 /**
@@ -66,7 +69,7 @@ private enum class WizardStep(val title: String) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddHabitScreen(editingHabitId: Long?, onDone: () -> Unit, onCancel: () -> Unit) {
-    val viewModel = rememberOpenZillaViewModel { AddHabitViewModel(it.repository, editingHabitId) }
+    val viewModel = rememberOpenZillaViewModel { AddHabitViewModel(it, it.repository, editingHabitId) }
     val haptics = rememberHaptics()
     var showCategoryPicker by remember { mutableStateOf(editingHabitId == null) }
     var stepIndex by remember { mutableIntStateOf(0) }
@@ -85,9 +88,9 @@ fun AddHabitScreen(editingHabitId: Long?, onDone: () -> Unit, onCancel: () -> Un
     if (showCategoryPicker) {
         CategoryPickerScreen(
             onBack = onCancel,
-            onPick = { category ->
+            onPick = { category, categoryLabel ->
                 viewModel.setIcon(category.key)
-                if (viewModel.state.name.isBlank()) viewModel.setName(category.label)
+                if (viewModel.state.name.isBlank()) viewModel.setName(categoryLabel)
                 viewModel.setCostType(category.suggestedType)
                 showCategoryPicker = false
             }
@@ -98,7 +101,7 @@ fun AddHabitScreen(editingHabitId: Long?, onDone: () -> Unit, onCancel: () -> Un
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (viewModel.isEditing && step == WizardStep.NAME_ICON) "Editar hábito" else step.title) },
+                title = { Text(if (viewModel.isEditing && step == WizardStep.NAME_ICON) stringResource(R.string.wizard_edit) else stringResource(step.titleRes)) },
                 navigationIcon = {
                     // Al crear un hábito, "atrás" desde el primer paso vuelve a la lista de
                     // categorías (de donde se venía), no cierra el asistente entero.
@@ -109,7 +112,7 @@ fun AddHabitScreen(editingHabitId: Long?, onDone: () -> Unit, onCancel: () -> Un
                             else -> onCancel()
                         }
                     }) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Atrás")
+                        Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
                     }
                 }
             )
@@ -121,7 +124,7 @@ fun AddHabitScreen(editingHabitId: Long?, onDone: () -> Unit, onCancel: () -> Un
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    "Paso ${stepIndex + 1} de ${steps.size}",
+                    stringResource(R.string.wizard_step, stepIndex + 1, steps.size),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -133,7 +136,7 @@ fun AddHabitScreen(editingHabitId: Long?, onDone: () -> Unit, onCancel: () -> Un
                         viewModel.save(onDone = onDone, onError = { error = it })
                     }
                 }) {
-                    Text(if (!isLastStep) "Siguiente" else if (viewModel.isEditing) "Guardar" else "Finalizar")
+                    Text(stringResource(if (!isLastStep) R.string.action_next else if (viewModel.isEditing) R.string.action_save else R.string.action_finish))
                 }
             }
         }
@@ -149,7 +152,7 @@ fun AddHabitScreen(editingHabitId: Long?, onDone: () -> Unit, onCancel: () -> Un
     }
 
     error?.let {
-        ConfirmDialog(title = "Falta un dato", message = it, confirmLabel = "Entendido", onConfirm = { error = null }, onDismiss = { error = null })
+        ConfirmDialog(title = stringResource(R.string.wizard_missing_title), message = it, confirmLabel = stringResource(R.string.action_understood), onConfirm = { error = null }, onDismiss = { error = null })
     }
 }
 
@@ -163,16 +166,16 @@ private fun NameIconStep(viewModel: AddHabitViewModel) {
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
         ) {
             IconButton(onClick = { showIconPicker = true }, modifier = Modifier.fillMaxSize()) {
-                Icon(HabitCategory.iconFor(viewModel.state.iconKey), contentDescription = "Cambiar icono", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(48.dp))
+                Icon(HabitCategory.iconFor(viewModel.state.iconKey), contentDescription = stringResource(R.string.wizard_change_icon), tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(48.dp))
             }
         }
-        Text("¿Qué hábito o adicción quieres dejar?", style = MaterialTheme.typography.bodyLarge)
+        Text(stringResource(R.string.wizard_question), style = MaterialTheme.typography.bodyLarge)
         OutlinedTextField(
             value = viewModel.state.name,
             onValueChange = viewModel::setName,
             modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
             singleLine = true,
-            label = { Text("Nombre") }
+            label = { Text(stringResource(R.string.wizard_name_label)) }
         )
     }
 
@@ -185,8 +188,8 @@ private fun NameIconStep(viewModel: AddHabitViewModel) {
 private fun IconPickerDialog(onDismiss: () -> Unit, onPick: (String) -> Unit) {
     androidx.compose.material3.AlertDialog(
         onDismissRequest = onDismiss,
-        confirmButton = { TextButton(onClick = onDismiss) { Text("Cerrar") } },
-        title = { Text("Elige un icono") },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_close)) } },
+        title = { Text(stringResource(R.string.wizard_pick_icon)) },
         text = {
             LazyVerticalGrid(columns = GridCells.Fixed(5), modifier = Modifier.size(280.dp)) {
                 items(HabitCategory.iconChoices) { (key, icon) ->
@@ -202,18 +205,18 @@ private fun IconPickerDialog(onDismiss: () -> Unit, onPick: (String) -> Unit) {
 @Composable
 private fun TypeStep(viewModel: AddHabitViewModel) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        Text("Selecciona el tipo", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 12.dp))
+        Text(stringResource(R.string.wizard_select_type), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 12.dp))
         TypeOption(
             selected = viewModel.state.costType == HabitCostType.MONEY,
-            title = "Dinero",
-            description = "Este hábito te cuesta dinero. Por ejemplo: fumar, beber alcohol.",
+            title = stringResource(R.string.type_money),
+            description = stringResource(R.string.type_money_desc),
             onSelect = { viewModel.setCostType(HabitCostType.MONEY) }
         ) {
             if (viewModel.state.costType == HabitCostType.MONEY) {
                 OutlinedTextField(
                     value = viewModel.state.weeklyAmountText,
                     onValueChange = viewModel::setWeeklyAmount,
-                    label = { Text("¿Cuál es el gasto medio a la semana?") },
+                    label = { Text(stringResource(R.string.type_money_question)) },
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                     singleLine = true
                 )
@@ -221,15 +224,15 @@ private fun TypeStep(viewModel: AddHabitViewModel) {
         }
         TypeOption(
             selected = viewModel.state.costType == HabitCostType.TIME,
-            title = "Tiempo",
-            description = "Este hábito es una pérdida de tiempo. Ejemplo: videojuegos, desidia.",
+            title = stringResource(R.string.type_time),
+            description = stringResource(R.string.type_time_desc),
             onSelect = { viewModel.setCostType(HabitCostType.TIME) }
         ) {
             if (viewModel.state.costType == HabitCostType.TIME) {
                 OutlinedTextField(
                     value = viewModel.state.weeklyAmountText,
                     onValueChange = viewModel::setWeeklyAmount,
-                    label = { Text("¿Cuántas horas a la semana le dedicas?") },
+                    label = { Text(stringResource(R.string.type_time_question)) },
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                     singleLine = true
                 )
@@ -237,8 +240,8 @@ private fun TypeStep(viewModel: AddHabitViewModel) {
         }
         TypeOption(
             selected = viewModel.state.costType == HabitCostType.EVENT,
-            title = "Evento",
-            description = "Este hábito no cuesta dinero ni tiempo, pero el evento en sí te perjudica.",
+            title = stringResource(R.string.type_event),
+            description = stringResource(R.string.type_event_desc),
             onSelect = { viewModel.setCostType(HabitCostType.EVENT) },
             extra = null
         )
@@ -266,10 +269,10 @@ private fun TypeOption(selected: Boolean, title: String, description: String, on
 @Composable
 private fun DateStep(viewModel: AddHabitViewModel) {
     val context = LocalContext.current
-    val formatter = remember { SimpleDateFormat("d 'de' MMMM 'de' yyyy, HH:mm", Locale("es")) }
+    val formatter = remember { SimpleDateFormat("d MMMM yyyy, HH:mm", Locale.getDefault()) }
 
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-        Text("¿Cuándo fue la última vez?", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 16.dp))
+        Text(stringResource(R.string.wizard_when_last), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 16.dp))
         OutlinedButton(onClick = {
             val cal = Calendar.getInstance().apply { timeInMillis = viewModel.state.startedAt }
             DatePickerDialog(context, { _, year, month, day ->
@@ -288,7 +291,7 @@ private fun DateStep(viewModel: AddHabitViewModel) {
             Text(formatter.format(Date(viewModel.state.startedAt)))
         }
         Text(
-            "El contador arranca desde este momento.",
+            stringResource(R.string.wizard_counter_starts),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 12.dp)
@@ -299,9 +302,9 @@ private fun DateStep(viewModel: AddHabitViewModel) {
 @Composable
 private fun GoalStep(viewModel: AddHabitViewModel) {
     Column(modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
-        Text("¿Cuál es tu primera meta?", style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(R.string.wizard_first_goal), style = MaterialTheme.typography.titleMedium)
         Text(
-            "Cuando la alcances, OpenZilla pasará sola a la siguiente meta de la escala (1 día, 3 días, 1 semana, 2 semanas, 1 mes…), así que el contador nunca vuelve a cero por haberlo conseguido.",
+            stringResource(R.string.wizard_goal_explain),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 4.dp, bottom = 12.dp)
@@ -320,7 +323,7 @@ private fun GoalStep(viewModel: AddHabitViewModel) {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(goal.label, style = MaterialTheme.typography.titleMedium)
+                    Text(goalLabel(goal.hours), style = MaterialTheme.typography.titleMedium)
                     RadioButton(selected = selected, onClick = { viewModel.setGoalHours(goal.hours) })
                 }
             }

@@ -3,6 +3,7 @@ package com.openzilla.app.notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import com.openzilla.app.R
 import android.os.Build
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
@@ -22,8 +23,8 @@ object NotificationScheduler {
     fun ensureChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val manager = context.getSystemService(NotificationManager::class.java)
-            val channel = NotificationChannel(CHANNEL_ID, "OpenZilla", NotificationManager.IMPORTANCE_LOW)
-            channel.description = "Motivación diaria y logros de progreso"
+            val channel = NotificationChannel(CHANNEL_ID, context.getString(R.string.app_name), NotificationManager.IMPORTANCE_LOW)
+            channel.description = context.getString(R.string.notif_channel_desc)
             manager?.createNotificationChannel(channel)
         }
     }

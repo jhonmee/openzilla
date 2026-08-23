@@ -4,6 +4,8 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.openzilla.app.R
+import com.openzilla.app.data.AppLanguage
 import com.openzilla.app.data.AppSettings
 import com.openzilla.app.data.ExportImportManager
 import com.openzilla.app.data.HabitRepository
@@ -42,6 +44,14 @@ class SettingsViewModel(
     fun setSeedColorDark(argb: Int) = viewModelScope.launch { settingsRepository.setSeedColorDark(argb) }
     fun setDynamicColor(enabled: Boolean) = viewModelScope.launch { settingsRepository.setDynamicColor(enabled) }
     fun setHapticsEnabled(enabled: Boolean) = viewModelScope.launch { settingsRepository.setHapticsEnabled(enabled) }
+    /**
+     * [onSaved] corre cuando el idioma ya está en disco. La pantalla lo usa para recrear la
+     * Activity: si la recreara antes, volvería a leer el idioma viejo y no cambiaría nada.
+     */
+    fun setLanguage(language: AppLanguage, onSaved: () -> Unit = {}) = viewModelScope.launch {
+        settingsRepository.setLanguage(language)
+        onSaved()
+    }
     fun setCurrency(symbol: String) = viewModelScope.launch { settingsRepository.setCurrency(symbol) }
 
     fun setNotifyDailyQuote(enabled: Boolean) = viewModelScope.launch {
@@ -66,19 +76,19 @@ class SettingsViewModel(
 
     fun exportTo(uri: Uri) = viewModelScope.launch {
         exportImportManager.exportTo(uri)
-            .onSuccess { _message.value = "Copia exportada correctamente" }
-            .onFailure { _message.value = "No se pudo exportar: ${it.message}" }
+            .onSuccess { _message.value = context.getString(R.string.data_export_ok) }
+            .onFailure { _message.value = context.getString(R.string.data_export_failed, it.message ?: "") }
     }
 
     fun importFrom(uri: Uri) = viewModelScope.launch {
         exportImportManager.importFrom(uri)
-            .onSuccess { count -> _message.value = "Importados $count hábitos. Se reemplazaron los datos anteriores." }
-            .onFailure { _message.value = "No se pudo importar: ${it.message}" }
+            .onSuccess { count -> _message.value = context.getString(R.string.data_import_ok, count) }
+            .onFailure { _message.value = context.getString(R.string.data_import_failed, it.message ?: "") }
     }
 
     fun deleteAllData(onDone: () -> Unit) = viewModelScope.launch {
         habitRepository.deleteEverything()
             .onSuccess { onDone() }
-            .onFailure { _message.value = "No se pudo borrar todo: ${it.message}" }
+            .onFailure { _message.value = context.getString(R.string.data_delete_failed, it.message ?: "") }
     }
 }

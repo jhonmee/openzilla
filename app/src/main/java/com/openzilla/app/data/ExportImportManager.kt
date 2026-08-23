@@ -2,6 +2,7 @@ package com.openzilla.app.data
 
 import android.content.Context
 import android.net.Uri
+import com.openzilla.app.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
@@ -59,7 +60,7 @@ class ExportImportManager(private val context: Context, private val repository: 
             val text = json.encodeToString(file)
             context.contentResolver.openOutputStream(uri, "wt")?.use { out ->
                 out.write(text.toByteArray(Charsets.UTF_8))
-            } ?: error("No se pudo abrir el archivo destino")
+            } ?: error(context.getString(R.string.data_write_failed))
         }
     }
 
@@ -67,9 +68,9 @@ class ExportImportManager(private val context: Context, private val repository: 
     suspend fun importFrom(uri: Uri): Result<Int> = withContext(Dispatchers.IO) {
         runCatching {
             val text = context.contentResolver.openInputStream(uri)?.use { it.readBytes().toString(Charsets.UTF_8) }
-                ?: error("No se pudo leer el archivo")
+                ?: error(context.getString(R.string.data_read_failed))
             val file = json.decodeFromString<ExportFile>(text)
-            require(file.formatVersion <= 1) { "Este archivo es de una versión más nueva de OpenZilla" }
+            require(file.formatVersion <= 1) { context.getString(R.string.data_version_too_new) }
 
             val payload = ExportPayload(
                 habits = file.habits.map {

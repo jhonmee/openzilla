@@ -14,7 +14,7 @@ import com.openzilla.app.util.quoteOfTheDay
 
 class DailyQuoteWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
-        val quote = quoteOfTheDay()
+        val quote = quoteOfTheDay(applicationContext)
         notify(applicationContext, applicationContext.getString(R.string.notif_daily_quote_title), "${quote.text} — ${quote.author}")
         return Result.success()
     }

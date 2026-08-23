@@ -32,6 +32,9 @@ secreto del repositorio y cambiar `assembleDebug` por `assembleRelease` en el fl
   coste (dinero / tiempo / evento).
 - Ordena la lista a tu gusto: mantén pulsado un hábito, se levanta y lo arrastras donde
   quieras (la lista se desplaza sola al llegar a los bordes).
+- Pantalla de estadísticas generales, con el conjunto de todos tus hábitos: comparativa de
+  rachas, recaídas por mes, ahorro acumulado y reparto por tipo.
+- Español e inglés, con selector propio en Ajustes (o el idioma del sistema).
 - Navegación con los gestos de Android: las pantallas entran y salen deslizándose, y en
   Android 13 o superior puedes mantener el gesto de volver para ir viendo a dónde regresas y
   soltarlo a medias si cambias de idea. En versiones anteriores el botón de atrás funciona

@@ -80,6 +80,10 @@ interface HistoryDao {
     @Query("SELECT * FROM history ORDER BY streakEnd ASC")
     suspend fun getAllOnce(): List<HistoryEntity>
 
+    /** Todo el historial, de todos los hábitos: lo usa la pantalla de estadísticas generales. */
+    @Query("SELECT * FROM history ORDER BY streakEnd ASC")
+    fun observeAll(): Flow<List<HistoryEntity>>
+
     @Query("DELETE FROM history")
     suspend fun deleteAllOnce()
 }

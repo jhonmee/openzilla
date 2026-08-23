@@ -23,6 +23,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.openzilla.app.R
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -56,40 +58,41 @@ fun StatsTab(habit: HabitEntity, history: List<HistoryEntity>) {
     val longest = maxOf(currentStreak, pastStreaks.maxOrNull() ?: 0L)
     val average = if (pastStreaks.isEmpty()) currentStreak else (pastStreaks.sum() + currentStreak) / (pastStreaks.size + 1)
 
-    val dayFormat = remember { SimpleDateFormat("d/M", Locale("es")) }
-    val fullFormat = remember { SimpleDateFormat("d MMM yyyy, HH:mm", Locale("es")) }
+    val dayFormat = remember { SimpleDateFormat("d/M", Locale.getDefault()) }
+    val fullFormat = remember { SimpleDateFormat("d MMM yyyy, HH:mm", Locale.getDefault()) }
 
-    val bars = remember(history, currentStreak) {
+    val nowLabel = stringResource(R.string.stats_now)
+    val bars = remember(history, currentStreak, nowLabel) {
         history
             .sortedBy { it.streakEnd }
             .takeLast(MAX_BARS)
             .map { Bar(dayFormat.format(Date(it.streakEnd)), (it.streakEnd - it.streakStart).coerceAtLeast(0), false) } +
-            Bar("Ahora", currentStreak, true)
+            Bar(nowLabel, currentStreak, true)
     }
 
     LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-                StatBox(Icons.Filled.LocalFireDepartment, "Racha actual", formatDurationShort(currentStreak), Modifier.weight(1f), highlight = true)
-                StatBox(Icons.Filled.EmojiEvents, "Mejor racha", formatDurationShort(longest), Modifier.weight(1f))
+                StatBox(Icons.Filled.LocalFireDepartment, stringResource(R.string.stats_current_streak), formatDurationShort(currentStreak), Modifier.weight(1f), highlight = true)
+                StatBox(Icons.Filled.EmojiEvents, stringResource(R.string.stats_best_streak), formatDurationShort(longest), Modifier.weight(1f))
             }
         }
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth().padding(top = 10.dp)) {
-                StatBox(Icons.Filled.Replay, "Recaídas", history.size.toString(), Modifier.weight(1f))
-                StatBox(Icons.Filled.Timeline, "Racha media", formatDurationShort(average), Modifier.weight(1f))
+                StatBox(Icons.Filled.Replay, stringResource(R.string.stats_relapses), history.size.toString(), Modifier.weight(1f))
+                StatBox(Icons.Filled.Timeline, stringResource(R.string.stats_average), formatDurationShort(average), Modifier.weight(1f))
             }
         }
 
         item {
             Text(
-                "Historial de rachas",
+                stringResource(R.string.stats_history_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 24.dp, bottom = 4.dp)
             )
             Text(
-                "Cada barra es una racha completa; la última es la que está en marcha.",
+                stringResource(R.string.stats_history_hint),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 12.dp)
@@ -100,7 +103,7 @@ fun StatsTab(habit: HabitEntity, history: List<HistoryEntity>) {
         if (history.isNotEmpty()) {
             item {
                 Text(
-                    "Recaídas registradas",
+                    stringResource(R.string.stats_relapses_logged),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 28.dp, bottom = 8.dp)
@@ -115,7 +118,7 @@ fun StatsTab(habit: HabitEntity, history: List<HistoryEntity>) {
                     ) {
                         Text(fullFormat.format(Date(entry.streakEnd)), style = MaterialTheme.typography.bodyMedium)
                         Text(
-                            "aguantaste ${formatDurationShort(entry.streakEnd - entry.streakStart)}",
+                            stringResource(R.string.stats_held, formatDurationShort(entry.streakEnd - entry.streakStart)),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

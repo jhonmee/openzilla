@@ -13,12 +13,23 @@ private val Context.dataStore by preferencesDataStore("openzilla_settings")
 /** OLED is a dark variant that paints the neutral surfaces pure black. */
 enum class ThemeMode { SYSTEM, LIGHT, DARK, OLED }
 
+/**
+ * App language. SYSTEM follows whatever the phone is set to (and falls back to Spanish for
+ * any language the app has not been translated into); the other two force one regardless.
+ */
+enum class AppLanguage(val tag: String?) {
+    SYSTEM(null),
+    SPANISH("es"),
+    ENGLISH("en")
+}
+
 data class AppSettings(
     val themeMode: ThemeMode = ThemeMode.DARK,
     val seedColorLight: Int = 0xFFE0526B.toInt(),
     val seedColorDark: Int = 0xFFE0526B.toInt(),
     val dynamicColor: Boolean = false,
     val hapticsEnabled: Boolean = true,
+    val language: AppLanguage = AppLanguage.SYSTEM,
     val currencySymbol: String = "$",
     val notifyProgress: Boolean = true,
     val notifyDailyQuote: Boolean = true
@@ -36,6 +47,7 @@ class SettingsRepository(private val context: Context) {
         val SEED_DARK = intPreferencesKey("seed_dark")
         val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
         val HAPTICS = booleanPreferencesKey("haptics")
+        val LANGUAGE = stringPreferencesKey("language")
         val CURRENCY = stringPreferencesKey("currency")
         val NOTIFY_PROGRESS = booleanPreferencesKey("notify_progress")
         val NOTIFY_QUOTE = booleanPreferencesKey("notify_quote")
@@ -49,6 +61,7 @@ class SettingsRepository(private val context: Context) {
             seedColorDark = prefs[Keys.SEED_DARK] ?: default.seedColorDark,
             dynamicColor = prefs[Keys.DYNAMIC_COLOR] ?: default.dynamicColor,
             hapticsEnabled = prefs[Keys.HAPTICS] ?: default.hapticsEnabled,
+            language = prefs[Keys.LANGUAGE]?.let { runCatching { AppLanguage.valueOf(it) }.getOrNull() } ?: default.language,
             currencySymbol = prefs[Keys.CURRENCY] ?: default.currencySymbol,
             notifyProgress = prefs[Keys.NOTIFY_PROGRESS] ?: default.notifyProgress,
             notifyDailyQuote = prefs[Keys.NOTIFY_QUOTE] ?: default.notifyDailyQuote
@@ -60,6 +73,7 @@ class SettingsRepository(private val context: Context) {
     suspend fun setSeedColorDark(argb: Int) = context.dataStore.edit { it[Keys.SEED_DARK] = argb }
     suspend fun setDynamicColor(enabled: Boolean) = context.dataStore.edit { it[Keys.DYNAMIC_COLOR] = enabled }
     suspend fun setHapticsEnabled(enabled: Boolean) = context.dataStore.edit { it[Keys.HAPTICS] = enabled }
+    suspend fun setLanguage(language: AppLanguage) = context.dataStore.edit { it[Keys.LANGUAGE] = language.name }
     suspend fun setCurrency(symbol: String) = context.dataStore.edit { it[Keys.CURRENCY] = symbol }
     suspend fun setNotifyProgress(enabled: Boolean) = context.dataStore.edit { it[Keys.NOTIFY_PROGRESS] = enabled }
     suspend fun setNotifyDailyQuote(enabled: Boolean) = context.dataStore.edit { it[Keys.NOTIFY_QUOTE] = enabled }

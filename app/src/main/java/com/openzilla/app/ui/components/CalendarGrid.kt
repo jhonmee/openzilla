@@ -20,6 +20,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.openzilla.app.R
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,7 +58,7 @@ fun CalendarGrid(
     modifier: Modifier = Modifier
 ) {
     val monthLabel = remember(monthAnchor.timeInMillis) {
-        SimpleDateFormat("MMMM yyyy", Locale("es")).format(monthAnchor.time).replaceFirstChar { it.uppercase() }
+        SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(monthAnchor.time).replaceFirstChar { it.uppercase() }
     }
 
     // Las celdas del mes se calculan una vez por mes, no en cada recomposición: así no se
@@ -85,20 +88,21 @@ fun CalendarGrid(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = onPrevMonth) { Icon(Icons.Filled.ChevronLeft, contentDescription = "Mes anterior") }
+            IconButton(onClick = onPrevMonth) { Icon(Icons.Filled.ChevronLeft, contentDescription = stringResource(R.string.calendar_prev_month)) }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(monthLabel, style = MaterialTheme.typography.titleMedium)
                 Text(
-                    if (coveredInMonth == 1) "1 día cumplido" else "$coveredInMonth días cumplidos",
+                    if (coveredInMonth == 1) stringResource(R.string.calendar_days_done_one)
+                    else stringResource(R.string.calendar_days_done_other, coveredInMonth),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            IconButton(onClick = onNextMonth) { Icon(Icons.Filled.ChevronRight, contentDescription = "Mes siguiente") }
+            IconButton(onClick = onNextMonth) { Icon(Icons.Filled.ChevronRight, contentDescription = stringResource(R.string.calendar_next_month)) }
         }
 
         Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
-            listOf("dom", "lun", "mar", "mié", "jue", "vie", "sáb").forEach {
+            stringArrayResource(R.array.weekday_short).forEach {
                 Text(
                     it,
                     modifier = Modifier.weight(1f),
@@ -136,12 +140,12 @@ fun CalendarGrid(
             modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            LegendItem(MaterialTheme.colorScheme.primary.copy(alpha = 0.22f), MaterialTheme.colorScheme.primary, "Cumplido")
-            LegendItem(MaterialTheme.colorScheme.error.copy(alpha = 0.22f), MaterialTheme.colorScheme.error, "Recaída")
-            LegendItem(Color.Transparent, MaterialTheme.colorScheme.primary, "Hoy")
+            LegendItem(MaterialTheme.colorScheme.primary.copy(alpha = 0.22f), MaterialTheme.colorScheme.primary, stringResource(R.string.calendar_legend_done))
+            LegendItem(MaterialTheme.colorScheme.error.copy(alpha = 0.22f), MaterialTheme.colorScheme.error, stringResource(R.string.calendar_legend_relapse))
+            LegendItem(Color.Transparent, MaterialTheme.colorScheme.primary, stringResource(R.string.calendar_legend_today))
         }
         Text(
-            "Toca un día de tu racha actual para registrar una recaída en esa fecha.",
+            stringResource(R.string.calendar_hint),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 8.dp)

@@ -22,6 +22,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.openzilla.app.R
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -45,7 +47,7 @@ fun HabitDetailScreen(
     onEdit: (Long) -> Unit,
     onDeleted: () -> Unit
 ) {
-    val viewModel = rememberOpenZillaViewModel { HabitDetailViewModel(it.repository, habitId) }
+    val viewModel = rememberOpenZillaViewModel { HabitDetailViewModel(it, it.repository, habitId) }
     val habit by viewModel.habit.collectAsStateWithLifecycle()
     val reasons by viewModel.reasons.collectAsStateWithLifecycle()
     val history by viewModel.history.collectAsStateWithLifecycle()
@@ -67,7 +69,7 @@ fun HabitDetailScreen(
             delay(250)
             showSpinner = true
         }
-        Scaffold(topBar = { TopAppBar(title = { Text("") }, navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, contentDescription = "Atrás") } }) }) { padding ->
+        Scaffold(topBar = { TopAppBar(title = { Text("") }, navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back)) } }) }) { padding ->
             Box(Modifier.padding(padding).fillMaxSize(), contentAlignment = Alignment.Center) {
                 if (showSpinner) CircularProgressIndicator()
             }
@@ -79,23 +81,23 @@ fun HabitDetailScreen(
         topBar = {
             TopAppBar(
                 title = { Text(current.name) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, contentDescription = "Atrás") } },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back)) } },
                 actions = {
-                    IconButton(onClick = { menuOpen = true }) { Icon(Icons.Filled.MoreVert, contentDescription = "Más opciones") }
+                    IconButton(onClick = { menuOpen = true }) { Icon(Icons.Filled.MoreVert, contentDescription = stringResource(R.string.action_more_options)) }
                     DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                        DropdownMenuItem(text = { Text("Editar") }, onClick = { menuOpen = false; onEdit(habitId) })
-                        DropdownMenuItem(text = { Text("Reiniciar contador") }, onClick = { menuOpen = false; confirmReset = true })
-                        DropdownMenuItem(text = { Text("Eliminar") }, onClick = { menuOpen = false; confirmDelete = true })
+                        DropdownMenuItem(text = { Text(stringResource(R.string.action_edit)) }, onClick = { menuOpen = false; onEdit(habitId) })
+                        DropdownMenuItem(text = { Text(stringResource(R.string.reset_title)) }, onClick = { menuOpen = false; confirmReset = true })
+                        DropdownMenuItem(text = { Text(stringResource(R.string.action_delete)) }, onClick = { menuOpen = false; confirmDelete = true })
                     }
                 }
             )
         },
         bottomBar = {
             NavigationBar {
-                NavigationBarItem(selected = tab == 0, onClick = { haptics.tap(); tab = 0 }, icon = { Icon(Icons.Filled.CalendarMonth, contentDescription = null) }, label = { Text("Resumen") })
-                NavigationBarItem(selected = tab == 1, onClick = { haptics.tap(); tab = 1 }, icon = { Icon(Icons.Filled.Lightbulb, contentDescription = null) }, label = { Text("Motivación") })
-                NavigationBarItem(selected = tab == 2, onClick = { haptics.tap(); tab = 2 }, icon = { Icon(Icons.Filled.ShowChart, contentDescription = null) }, label = { Text("Progreso") })
-                NavigationBarItem(selected = tab == 3, onClick = { haptics.tap(); tab = 3 }, icon = { Icon(Icons.Filled.EmojiEvents, contentDescription = null) }, label = { Text("Trofeos") })
+                NavigationBarItem(selected = tab == 0, onClick = { haptics.tap(); tab = 0 }, icon = { Icon(Icons.Filled.CalendarMonth, contentDescription = null) }, label = { Text(stringResource(R.string.tab_summary)) })
+                NavigationBarItem(selected = tab == 1, onClick = { haptics.tap(); tab = 1 }, icon = { Icon(Icons.Filled.Lightbulb, contentDescription = null) }, label = { Text(stringResource(R.string.tab_motivation)) })
+                NavigationBarItem(selected = tab == 2, onClick = { haptics.tap(); tab = 2 }, icon = { Icon(Icons.Filled.ShowChart, contentDescription = null) }, label = { Text(stringResource(R.string.tab_progress)) })
+                NavigationBarItem(selected = tab == 3, onClick = { haptics.tap(); tab = 3 }, icon = { Icon(Icons.Filled.EmojiEvents, contentDescription = null) }, label = { Text(stringResource(R.string.tab_trophies)) })
             }
         }
     ) { padding ->
@@ -116,22 +118,22 @@ fun HabitDetailScreen(
 
     if (confirmReset) {
         ConfirmDialog(
-            title = "Reiniciar contador",
-            message = "Se guardará tu racha actual en el historial y el contador volverá a empezar desde ahora. Esto no borra tus datos anteriores.",
-            confirmLabel = "Reiniciar",
+            title = stringResource(R.string.reset_title),
+            message = stringResource(R.string.reset_message),
+            confirmLabel = stringResource(R.string.reset_confirm),
             onConfirm = { haptics.confirm(); viewModel.resetHabit(); confirmReset = false },
             onDismiss = { confirmReset = false }
         )
     }
     if (confirmDelete) {
         ConfirmDialog(
-            title = "Eliminar \"${current.name}\"",
-            message = "Se borrará este hábito y todo su historial de forma permanente. Esta acción no se puede deshacer.",
+            title = stringResource(R.string.delete_habit_title, current.name),
+            message = stringResource(R.string.delete_habit_message),
             onConfirm = { haptics.confirm(); viewModel.deleteHabit(onDeleted); confirmDelete = false },
             onDismiss = { confirmDelete = false }
         )
     }
     error?.let { msg ->
-        ConfirmDialog(title = "Ocurrió un problema", message = msg, confirmLabel = "Cerrar", onConfirm = viewModel::clearError, onDismiss = viewModel::clearError)
+        ConfirmDialog(title = stringResource(R.string.error_title), message = msg, confirmLabel = stringResource(R.string.action_close), onConfirm = viewModel::clearError, onDismiss = viewModel::clearError)
     }
 }

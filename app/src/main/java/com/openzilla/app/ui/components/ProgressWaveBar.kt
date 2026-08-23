@@ -22,10 +22,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /** Cuánto tarda la onda en recorrer la barra entera. */
-private const val WAVE_SWEEP_MILLIS = 2600
+private const val WAVE_SWEEP_MILLIS = 2200
 
-/** Opacidad del punto más claro de la onda. Muy baja a propósito: debe insinuarse, no brillar. */
-private const val WAVE_ALPHA = 0.28f
+/** Opacidad del punto más claro de la onda. */
+private const val WAVE_ALPHA = 0.55f
 
 /**
  * Straight progress bar with a soft wave travelling along the filled section.
@@ -84,7 +84,7 @@ fun ProgressWaveBar(
         val travel = phase?.value ?: return@Canvas
         // La banda entra por la izquierda y sale por la derecha; fuera de su ventana el
         // degradado se queda en transparente, así que no hace falta recortar nada.
-        val bandWidth = (fullWidth * 0.22f).coerceAtLeast(h * 3f)
+        val bandWidth = (fullWidth * 0.30f).coerceAtLeast(h * 3.5f)
         val bandStart = -bandWidth + travel * (fillWidth + bandWidth)
         drawRoundRect(
             brush = Brush.horizontalGradient(

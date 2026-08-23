@@ -32,7 +32,12 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.openzilla.app.R
+import com.openzilla.app.data.AppLanguage
+import com.openzilla.app.findActivity
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -64,6 +69,7 @@ fun SettingsScreen(onBack: () -> Unit) {
     var showRemovePinConfirm by remember { mutableStateOf(false) }
     var showDeleteAllConfirm by remember { mutableStateOf(false) }
     var showCurrencyDialog by remember { mutableStateOf(false) }
+    var showLanguageDialog by remember { mutableStateOf(false) }
     var pinIsSet by remember { mutableStateOf(viewModel.isPinSet()) }
 
     val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri: Uri? ->
@@ -100,26 +106,26 @@ fun SettingsScreen(onBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Ajustes") },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, contentDescription = "Atrás") } }
+                title = { Text(stringResource(R.string.settings_title)) },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back)) } }
             )
         }
     ) { padding ->
         LazyColumn(modifier = Modifier.fillMaxSize().padding(padding)) {
-            item { SectionTitle("Apariencia") }
+            item { SectionTitle(stringResource(R.string.section_appearance)) }
             item {
                 Column(Modifier.padding(horizontal = 16.dp)) {
-                    ThemeModeOption("Sistema", settings.themeMode == ThemeMode.SYSTEM) { haptics.tap(); viewModel.setThemeMode(ThemeMode.SYSTEM) }
-                    ThemeModeOption("Claro", settings.themeMode == ThemeMode.LIGHT) { haptics.tap(); viewModel.setThemeMode(ThemeMode.LIGHT) }
-                    ThemeModeOption("Oscuro", settings.themeMode == ThemeMode.DARK) { haptics.tap(); viewModel.setThemeMode(ThemeMode.DARK) }
-                    ThemeModeOption("Negro (OLED)", settings.themeMode == ThemeMode.OLED) { haptics.tap(); viewModel.setThemeMode(ThemeMode.OLED) }
+                    ThemeModeOption(stringResource(R.string.theme_system), settings.themeMode == ThemeMode.SYSTEM) { haptics.tap(); viewModel.setThemeMode(ThemeMode.SYSTEM) }
+                    ThemeModeOption(stringResource(R.string.theme_light), settings.themeMode == ThemeMode.LIGHT) { haptics.tap(); viewModel.setThemeMode(ThemeMode.LIGHT) }
+                    ThemeModeOption(stringResource(R.string.theme_dark), settings.themeMode == ThemeMode.DARK) { haptics.tap(); viewModel.setThemeMode(ThemeMode.DARK) }
+                    ThemeModeOption(stringResource(R.string.theme_oled), settings.themeMode == ThemeMode.OLED) { haptics.tap(); viewModel.setThemeMode(ThemeMode.OLED) }
                 }
             }
             if (dynamicColorAvailable) {
                 item {
                     ListItem(
-                        headlineContent = { Text("Usar los colores del sistema") },
-                        supportingContent = { Text("Toma el color de acento del fondo de pantalla (Material You). Mientras esté activo, la elección manual de color queda desactivada.") },
+                        headlineContent = { Text(stringResource(R.string.dynamic_colors_title)) },
+                        supportingContent = { Text(stringResource(R.string.dynamic_colors_desc)) },
                         trailingContent = {
                             Switch(checked = settings.dynamicColor, onCheckedChange = { haptics.tap(); viewModel.setDynamicColor(it) })
                         }
@@ -128,7 +134,7 @@ fun SettingsScreen(onBack: () -> Unit) {
             }
             item {
                 Text(
-                    "Color — modo claro",
+                    stringResource(R.string.color_light),
                     style = MaterialTheme.typography.bodyMedium,
                     color = if (settings.dynamicColor) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(start = 16.dp, top = 12.dp)
@@ -141,7 +147,7 @@ fun SettingsScreen(onBack: () -> Unit) {
             }
             item {
                 Text(
-                    "Color — modo oscuro",
+                    stringResource(R.string.color_dark),
                     style = MaterialTheme.typography.bodyMedium,
                     color = if (settings.dynamicColor) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(start = 16.dp, top = 4.dp)
@@ -153,11 +159,18 @@ fun SettingsScreen(onBack: () -> Unit) {
                 )
             }
 
-            item { SectionTitle("General") }
+            item { SectionTitle(stringResource(R.string.section_general)) }
             item {
                 ListItem(
-                    headlineContent = { Text("Vibración al tocar") },
-                    supportingContent = { Text("Respuesta táctil breve en botones y acciones. Respeta siempre el ajuste de vibración del sistema.") },
+                    headlineContent = { Text(stringResource(R.string.language_title)) },
+                    supportingContent = { Text(stringResource(languageLabelRes(settings.language))) },
+                    modifier = Modifier.clickable { haptics.tap(); showLanguageDialog = true }
+                )
+            }
+            item {
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.haptics_title)) },
+                    supportingContent = { Text(stringResource(R.string.haptics_desc)) },
                     trailingContent = {
                         Switch(
                             checked = settings.hapticsEnabled,
@@ -173,34 +186,34 @@ fun SettingsScreen(onBack: () -> Unit) {
             }
             item {
                 ListItem(
-                    headlineContent = { Text("Moneda") },
+                    headlineContent = { Text(stringResource(R.string.currency_title)) },
                     supportingContent = { Text(settings.currencySymbol) },
                     modifier = Modifier.clickable { showCurrencyDialog = true }
                 )
             }
 
-            item { SectionTitle("Seguridad") }
+            item { SectionTitle(stringResource(R.string.section_security)) }
             item {
                 ListItem(
-                    headlineContent = { Text(if (pinIsSet) "Cambiar PIN" else "Activar bloqueo con PIN") },
-                    supportingContent = { Text("Protege el acceso a la app con un código local. Nunca sale de tu dispositivo.") },
+                    headlineContent = { Text(stringResource(if (pinIsSet) R.string.pin_change else R.string.pin_activate)) },
+                    supportingContent = { Text(stringResource(R.string.pin_desc)) },
                     modifier = Modifier.clickable { showPinDialog = true }
                 )
             }
             if (pinIsSet) {
                 item {
                     ListItem(
-                        headlineContent = { Text("Quitar PIN") },
+                        headlineContent = { Text(stringResource(R.string.pin_remove)) },
                         modifier = Modifier.clickable { showRemovePinConfirm = true }
                     )
                 }
             }
 
-            item { SectionTitle("Notificaciones") }
+            item { SectionTitle(stringResource(R.string.section_notifications)) }
             item {
                 ListItem(
-                    headlineContent = { Text("Avisos de progreso") },
-                    supportingContent = { Text("Recibe un aviso al alcanzar cada logro") },
+                    headlineContent = { Text(stringResource(R.string.notify_progress)) },
+                    supportingContent = { Text(stringResource(R.string.notify_progress_desc)) },
                     trailingContent = {
                         Switch(checked = settings.notifyProgress, onCheckedChange = { enabled ->
                             haptics.tap()
@@ -211,8 +224,8 @@ fun SettingsScreen(onBack: () -> Unit) {
             }
             item {
                 ListItem(
-                    headlineContent = { Text("Motivación diaria") },
-                    supportingContent = { Text("Recibe la frase del día") },
+                    headlineContent = { Text(stringResource(R.string.notify_quote)) },
+                    supportingContent = { Text(stringResource(R.string.notify_quote_desc)) },
                     trailingContent = {
                         Switch(checked = settings.notifyDailyQuote, onCheckedChange = { enabled ->
                             haptics.tap()
@@ -222,34 +235,34 @@ fun SettingsScreen(onBack: () -> Unit) {
                 )
             }
 
-            item { SectionTitle("Datos") }
+            item { SectionTitle(stringResource(R.string.section_data)) }
             item {
                 ListItem(
-                    headlineContent = { Text("Exportar datos") },
-                    supportingContent = { Text("Guarda una copia local en un archivo que tú eliges") },
+                    headlineContent = { Text(stringResource(R.string.data_export)) },
+                    supportingContent = { Text(stringResource(R.string.data_export_desc)) },
                     modifier = Modifier.clickable { exportLauncher.launch("openzilla_backup.json") }
                 )
             }
             item {
                 ListItem(
-                    headlineContent = { Text("Importar datos") },
-                    supportingContent = { Text("Reemplaza los datos actuales con los de un archivo exportado antes") },
+                    headlineContent = { Text(stringResource(R.string.data_import)) },
+                    supportingContent = { Text(stringResource(R.string.data_import_desc)) },
                     modifier = Modifier.clickable { importLauncher.launch(arrayOf("application/json", "text/plain", "text/*")) }
                 )
             }
             item {
                 ListItem(
-                    headlineContent = { Text("Borrar todos los datos", color = MaterialTheme.colorScheme.error) },
+                    headlineContent = { Text(stringResource(R.string.data_delete_all), color = MaterialTheme.colorScheme.error) },
                     modifier = Modifier.clickable { showDeleteAllConfirm = true }
                 )
             }
 
-            item { SectionTitle("Acerca de") }
+            item { SectionTitle(stringResource(R.string.section_about)) }
             item {
                 Column(Modifier.padding(16.dp)) {
-                    Text("OpenZilla", style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(R.string.app_name), style = MaterialTheme.typography.titleMedium)
                     Text(
-                        "100% local y de código abierto. Sin anuncios, sin compras, sin cuentas ni conexión a internet: tus datos nunca salen de este dispositivo salvo que tú los exportes.",
+                        stringResource(R.string.about_body),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = 4.dp)
@@ -267,20 +280,33 @@ fun SettingsScreen(onBack: () -> Unit) {
     }
     if (showRemovePinConfirm) {
         ConfirmDialog(
-            title = "Quitar PIN",
-            message = "La app dejará de pedir un código al abrirse.",
-            confirmLabel = "Quitar",
+            title = stringResource(R.string.pin_remove),
+            message = stringResource(R.string.pin_remove_message),
+            confirmLabel = stringResource(R.string.pin_remove_confirm),
             onConfirm = { viewModel.removePin { pinIsSet = false }; showRemovePinConfirm = false },
             onDismiss = { showRemovePinConfirm = false }
         )
     }
     if (showDeleteAllConfirm) {
         ConfirmDialog(
-            title = "Borrar todos los datos",
-            message = "Se eliminarán todos tus hábitos, motivos e historial de forma permanente e irreversible. Considera exportar una copia antes de continuar.",
-            confirmLabel = "Borrar todo",
+            title = stringResource(R.string.data_delete_all),
+            message = stringResource(R.string.data_delete_all_message),
+            confirmLabel = stringResource(R.string.data_delete_all_confirm),
             onConfirm = { viewModel.deleteAllData { }; showDeleteAllConfirm = false },
             onDismiss = { showDeleteAllConfirm = false }
+        )
+    }
+    if (showLanguageDialog) {
+        LanguageDialog(
+            current = settings.language,
+            onDismiss = { showLanguageDialog = false },
+            onConfirm = { language ->
+                showLanguageDialog = false
+                haptics.tap()
+                // Recrear la Activity es lo que hace que los textos ya cargados se relean en
+                // el idioma nuevo; sin eso habría que salir y volver a entrar en la app.
+                viewModel.setLanguage(language) { context.findActivity()?.recreate() }
+            }
         )
     }
     if (showCurrencyDialog) {
@@ -288,16 +314,48 @@ fun SettingsScreen(onBack: () -> Unit) {
     }
     pendingImportUri?.let { uri ->
         ConfirmDialog(
-            title = "Importar datos",
-            message = "Esto reemplazará todos los hábitos, motivos e historial actuales con el contenido del archivo elegido. Esta acción no se puede deshacer.",
-            confirmLabel = "Reemplazar",
+            title = stringResource(R.string.data_import),
+            message = stringResource(R.string.data_import_message),
+            confirmLabel = stringResource(R.string.data_import_confirm),
             onConfirm = { viewModel.importFrom(uri); pendingImportUri = null },
             onDismiss = { pendingImportUri = null }
         )
     }
     message?.let { msg ->
-        ConfirmDialog(title = "Datos", message = msg, confirmLabel = "Cerrar", onConfirm = viewModel::clearMessage, onDismiss = viewModel::clearMessage)
+        ConfirmDialog(title = stringResource(R.string.data_title), message = msg, confirmLabel = stringResource(R.string.action_close), onConfirm = viewModel::clearMessage, onDismiss = viewModel::clearMessage)
     }
+}
+
+@StringRes
+private fun languageLabelRes(language: AppLanguage): Int = when (language) {
+    AppLanguage.SYSTEM -> R.string.language_system
+    AppLanguage.SPANISH -> R.string.language_spanish
+    AppLanguage.ENGLISH -> R.string.language_english
+}
+
+@Composable
+private fun LanguageDialog(current: AppLanguage, onDismiss: () -> Unit, onConfirm: (AppLanguage) -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.language_dialog_title)) },
+        text = {
+            Column {
+                AppLanguage.entries.forEach { language ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onConfirm(language) }
+                            .padding(vertical = 6.dp)
+                    ) {
+                        RadioButton(selected = language == current, onClick = { onConfirm(language) })
+                        Text(stringResource(languageLabelRes(language)), modifier = Modifier.padding(start = 8.dp))
+                    }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_close)) } }
+    )
 }
 
 @Composable
@@ -334,7 +392,7 @@ private fun ColorSwatchRow(selected: Color, enabled: Boolean, onSelect: (Color) 
                     .clickable(enabled = enabled) { onSelect(color) },
                 contentAlignment = Alignment.Center
             ) {
-                if (isSelected) Icon(Icons.Filled.Check, contentDescription = "Seleccionado", tint = Color.White)
+                if (isSelected) Icon(Icons.Filled.Check, contentDescription = stringResource(R.string.color_selected), tint = Color.White)
             }
         }
     }
@@ -347,15 +405,15 @@ private fun PinSetupDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
     val matches = pin.length in 4..8 && pin == confirmPin
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Elige un PIN") },
+        title = { Text(stringResource(R.string.pin_dialog_title)) },
         text = {
             Column {
-                OutlinedTextField(value = pin, onValueChange = { if (it.length <= 8) pin = it.filter { c -> c.isDigit() } }, label = { Text("PIN (4-8 dígitos)") })
-                OutlinedTextField(value = confirmPin, onValueChange = { if (it.length <= 8) confirmPin = it.filter { c -> c.isDigit() } }, label = { Text("Repite el PIN") }, modifier = Modifier.padding(top = 8.dp))
+                OutlinedTextField(value = pin, onValueChange = { if (it.length <= 8) pin = it.filter { c -> c.isDigit() } }, label = { Text(stringResource(R.string.pin_field)) })
+                OutlinedTextField(value = confirmPin, onValueChange = { if (it.length <= 8) confirmPin = it.filter { c -> c.isDigit() } }, label = { Text(stringResource(R.string.pin_repeat)) }, modifier = Modifier.padding(top = 8.dp))
             }
         },
-        confirmButton = { TextButton(onClick = { onConfirm(pin) }, enabled = matches) { Text("Guardar") } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } }
+        confirmButton = { TextButton(onClick = { onConfirm(pin) }, enabled = matches) { Text(stringResource(R.string.action_save)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } }
     )
 }
 
@@ -364,9 +422,9 @@ private fun CurrencyDialog(current: String, onDismiss: () -> Unit, onConfirm: (S
     var value by remember { mutableStateOf(current) }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Símbolo de moneda") },
-        text = { OutlinedTextField(value = value, onValueChange = { if (it.length <= 4) value = it }, label = { Text("Ej: $, €, £") }) },
-        confirmButton = { TextButton(onClick = { onConfirm(value.ifBlank { "$" }) }) { Text("Guardar") } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } }
+        title = { Text(stringResource(R.string.currency_dialog_title)) },
+        text = { OutlinedTextField(value = value, onValueChange = { if (it.length <= 4) value = it }, label = { Text(stringResource(R.string.currency_hint)) }) },
+        confirmButton = { TextButton(onClick = { onConfirm(value.ifBlank { "$" }) }) { Text(stringResource(R.string.action_save)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } }
     )
 }

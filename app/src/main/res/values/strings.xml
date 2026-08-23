@@ -1,7 +1,294 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Idioma por defecto: español. El inglés vive en res/values-en/strings.xml.
+    Al añadir una cadena aquí hay que añadirla también allí, o los dispositivos en inglés
+    caerán de vuelta al español para esa cadena concreta.
+-->
 <resources>
     <string name="app_name">OpenZilla</string>
+
+    <!-- Notificaciones -->
     <string name="notif_daily_quote_title">Motivación de hoy</string>
     <string name="notif_progress_title">¡Nuevo logro!</string>
     <string name="notif_progress_body">%1$s: alcanzaste el logro \"%2$s\"</string>
+    <string name="notif_channel_desc">Motivación diaria y logros de progreso</string>
+
+    <!-- Acciones comunes -->
+    <string name="action_back">Atrás</string>
+    <string name="action_save">Guardar</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_close">Cerrar</string>
+    <string name="action_delete">Eliminar</string>
+    <string name="action_understood">Entendido</string>
+    <string name="action_next">Siguiente</string>
+    <string name="action_finish">Finalizar</string>
+    <string name="action_more_options">Más opciones</string>
+    <string name="action_edit">Editar</string>
+    <string name="error_title">Ocurrió un problema</string>
+
+    <!-- Inicio -->
+    <string name="home_settings">Ajustes</string>
+    <string name="home_stats">Estadísticas</string>
+    <string name="home_add_habit">Añadir hábito</string>
+    <string name="home_empty">Toca + para registrar el primer hábito que quieres dejar</string>
+    <string name="home_since">Sin recaídas desde hace %1$s</string>
+    <string name="home_goal">Meta: %1$s</string>
+    <string name="home_reset_counter">Reiniciar contador</string>
+    <string name="delete_habit_title">Eliminar \"%1$s\"</string>
+    <string name="delete_habit_message">Se borrará este hábito y todo su historial de forma permanente. Esta acción no se puede deshacer.</string>
+
+    <!-- Asistente de creación -->
+    <string name="wizard_name_icon">Nombre e icono</string>
+    <string name="wizard_type">Tipo de hábito</string>
+    <string name="wizard_date">Última vez</string>
+    <string name="wizard_goal">Tu primera meta</string>
+    <string name="wizard_edit">Editar hábito</string>
+    <string name="wizard_step">Paso %1$d de %2$d</string>
+    <string name="wizard_question">¿Qué hábito o adicción quieres dejar?</string>
+    <string name="wizard_name_label">Nombre</string>
+    <string name="wizard_change_icon">Cambiar icono</string>
+    <string name="wizard_pick_icon">Elige un icono</string>
+    <string name="wizard_select_type">Selecciona el tipo</string>
+    <string name="wizard_when_last">¿Cuándo fue la última vez?</string>
+    <string name="wizard_counter_starts">El contador arranca desde este momento.</string>
+    <string name="wizard_first_goal">¿Cuál es tu primera meta?</string>
+    <string name="wizard_goal_explain">Cuando la alcances, OpenZilla pasará sola a la siguiente meta de la escala (1 día, 3 días, 1 semana, 2 semanas, 1 mes…), así que el contador nunca vuelve a cero por haberlo conseguido.</string>
+    <string name="wizard_missing_title">Falta un dato</string>
+    <string name="type_money">Dinero</string>
+    <string name="type_money_desc">Este hábito te cuesta dinero. Por ejemplo: fumar, beber alcohol.</string>
+    <string name="type_money_question">¿Cuál es el gasto medio a la semana?</string>
+    <string name="type_time">Tiempo</string>
+    <string name="type_time_desc">Este hábito es una pérdida de tiempo. Ejemplo: videojuegos, desidia.</string>
+    <string name="type_time_question">¿Cuántas horas a la semana le dedicas?</string>
+    <string name="type_event">Evento</string>
+    <string name="type_event_desc">Este hábito no cuesta dinero ni tiempo, pero el evento en sí te perjudica.</string>
+    <string name="error_need_name">Ponle un nombre al hábito</string>
+    <string name="error_negative_amount">El gasto no puede ser negativo</string>
+    <string name="error_save_failed">No se pudo guardar</string>
+    <string name="error_delete_failed">No se pudo eliminar</string>
+    <string name="error_reset_failed">No se pudo reiniciar</string>
+    <string name="error_order_failed">No se pudo guardar el orden</string>
+    <string name="error_reason_failed">No se pudo guardar el motivo</string>
+    <string name="error_relapse_failed">No se pudo registrar la recaída</string>
+
+    <!-- Selector de categoría -->
+    <string name="picker_title">¿Qué quieres dejar?</string>
+    <string name="category_generic">Adicción / hábito</string>
+    <string name="category_smoking">Fumar</string>
+    <string name="category_alcohol">Alcohol</string>
+    <string name="category_drugs">Drogas</string>
+    <string name="category_pills">Pastillas</string>
+    <string name="category_weed">Marihuana</string>
+    <string name="category_adult">Contenido adulto</string>
+    <string name="category_gaming">Videojuegos</string>
+    <string name="category_tv">Ver televisión</string>
+    <string name="category_shopping">Compras impulsivas</string>
+    <string name="category_social">Redes sociales</string>
+    <string name="category_streaming">Vídeos / streaming</string>
+    <string name="category_crowds">Socializar en exceso</string>
+    <string name="category_fastfood">Comida rápida</string>
+    <string name="category_sweets">Dulces</string>
+    <string name="category_overeating">Comer en exceso</string>
+    <string name="category_custom">Personalizado</string>
+
+    <!-- Detalle -->
+    <string name="tab_summary">Resumen</string>
+    <string name="tab_motivation">Motivación</string>
+    <string name="tab_progress">Progreso</string>
+    <string name="tab_trophies">Trofeos</string>
+    <string name="reset_title">Reiniciar contador</string>
+    <string name="reset_message">Se guardará tu racha actual en el historial y el contador volverá a empezar desde ahora. Esto no borra tus datos anteriores.</string>
+    <string name="reset_confirm">Reiniciar</string>
+
+    <!-- Resumen -->
+    <string name="summary_time_clean">Tiempo sin recaídas</string>
+    <string name="summary_remaining">Te faltan %1$s</string>
+    <string name="summary_max_goal">¡Meta máxima alcanzada!</string>
+    <string name="summary_register_relapse_now">Registrar recaída ahora</string>
+    <string name="relapse_title">Registrar recaída</string>
+    <string name="relapse_message">Se marcará una recaída el %1$s. La racha actual se guardará en el historial y el contador arrancará desde ese día.</string>
+    <string name="relapse_confirm">Registrar</string>
+
+    <!-- Calendario -->
+    <string name="calendar_prev_month">Mes anterior</string>
+    <string name="calendar_next_month">Mes siguiente</string>
+    <string name="calendar_days_done_one">1 día cumplido</string>
+    <string name="calendar_days_done_other">%1$d días cumplidos</string>
+    <string name="calendar_legend_done">Cumplido</string>
+    <string name="calendar_legend_relapse">Recaída</string>
+    <string name="calendar_legend_today">Hoy</string>
+    <string name="calendar_hint">Toca un día de tu racha actual para registrar una recaída en esa fecha.</string>
+    <string-array name="weekday_short">
+        <item>dom</item>
+        <item>lun</item>
+        <item>mar</item>
+        <item>mié</item>
+        <item>jue</item>
+        <item>vie</item>
+        <item>sáb</item>
+    </string-array>
+
+    <!-- Motivación -->
+    <string name="motivation_add_reason">Añadir motivo</string>
+    <string name="motivation_quote_title">Frase del día</string>
+    <string name="motivation_your_reasons">Tus motivos para dejarlo</string>
+    <string name="motivation_no_reasons">Aún no has escrito ningún motivo. Toca + para añadir uno.</string>
+    <string name="motivation_new_reason">Nuevo motivo</string>
+    <string name="motivation_why">¿Por qué quieres dejarlo?</string>
+    <string name="motivation_delete_reason">Eliminar motivo</string>
+    <string name="savings_title">Lo que llevas ganado</string>
+    <string name="savings_money">Has ahorrado aproximadamente %1$s</string>
+    <string name="savings_time">Has recuperado aproximadamente %1$s horas de tu tiempo</string>
+    <string name="savings_days">Llevas %1$s días eligiendo una vida más saludable.</string>
+
+    <!-- Progreso -->
+    <string name="stats_current_streak">Racha actual</string>
+    <string name="stats_best_streak">Mejor racha</string>
+    <string name="stats_relapses">Recaídas</string>
+    <string name="stats_average">Racha media</string>
+    <string name="stats_history_title">Historial de rachas</string>
+    <string name="stats_history_hint">Cada barra es una racha completa; la última es la que está en marcha.</string>
+    <string name="stats_now">Ahora</string>
+    <string name="stats_relapses_logged">Recaídas registradas</string>
+    <string name="stats_held">aguantaste %1$s</string>
+
+    <!-- Trofeos -->
+    <string name="trophy_achieved">¡Logrado!</string>
+    <string name="trophy_in_progress">En progreso</string>
+    <string name="trophy_24h">24 horas</string>
+    <string name="trophy_3d">3 días</string>
+    <string name="trophy_1w">1 semana</string>
+    <string name="trophy_2w">2 semanas</string>
+    <string name="trophy_1mo">1 mes</string>
+    <string name="trophy_3mo">3 meses</string>
+    <string name="trophy_6mo">6 meses</string>
+    <string name="trophy_1y">1 año</string>
+    <string name="trophy_2y">2 años</string>
+
+    <!-- Metas -->
+    <string name="goal_6h">6 horas</string>
+    <string name="goal_12h">12 horas</string>
+    <string name="goal_1d">1 día</string>
+    <string name="goal_3d">3 días</string>
+    <string name="goal_1w">1 semana</string>
+    <string name="goal_2w">2 semanas</string>
+    <string name="goal_1mo">1 mes</string>
+    <string name="goal_3mo">3 meses</string>
+    <string name="goal_6mo">6 meses</string>
+    <string name="goal_1y">1 año</string>
+    <string name="goal_2y">2 años</string>
+    <string name="goal_5y">5 años</string>
+    <string name="goal_hours_generic">%1$d horas</string>
+    <string name="goal_days_generic">%1$d días</string>
+
+    <!-- Ajustes -->
+    <string name="settings_title">Ajustes</string>
+    <string name="section_appearance">Apariencia</string>
+    <string name="section_general">General</string>
+    <string name="section_security">Seguridad</string>
+    <string name="section_notifications">Notificaciones</string>
+    <string name="section_data">Datos</string>
+    <string name="section_about">Acerca de</string>
+    <string name="theme_system">Sistema</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_dark">Oscuro</string>
+    <string name="theme_oled">Negro (OLED)</string>
+    <string name="dynamic_colors_title">Usar los colores del sistema</string>
+    <string name="dynamic_colors_desc">Toma el color de acento del fondo de pantalla (Material You). Mientras esté activo, la elección manual de color queda desactivada.</string>
+    <string name="color_light">Color — modo claro</string>
+    <string name="color_dark">Color — modo oscuro</string>
+    <string name="color_selected">Seleccionado</string>
+    <string name="haptics_title">Vibración al tocar</string>
+    <string name="haptics_desc">Respuesta táctil breve en botones y acciones. Respeta siempre el ajuste de vibración del sistema.</string>
+    <string name="language_title">Idioma</string>
+    <string name="language_dialog_title">Elige el idioma</string>
+    <string name="language_system">Idioma del sistema</string>
+    <string name="language_spanish">Español</string>
+    <string name="language_english">Inglés</string>
+    <string name="currency_title">Moneda</string>
+    <string name="currency_dialog_title">Símbolo de moneda</string>
+    <string name="currency_hint">Ej: $, €, £</string>
+    <string name="pin_activate">Activar bloqueo con PIN</string>
+    <string name="pin_change">Cambiar PIN</string>
+    <string name="pin_desc">Protege el acceso a la app con un código local. Nunca sale de tu dispositivo.</string>
+    <string name="pin_remove">Quitar PIN</string>
+    <string name="pin_remove_message">La app dejará de pedir un código al abrirse.</string>
+    <string name="pin_remove_confirm">Quitar</string>
+    <string name="pin_dialog_title">Elige un PIN</string>
+    <string name="pin_field">PIN (4-8 dígitos)</string>
+    <string name="pin_repeat">Repite el PIN</string>
+    <string name="notify_progress">Avisos de progreso</string>
+    <string name="notify_progress_desc">Recibe un aviso al alcanzar cada logro</string>
+    <string name="notify_quote">Motivación diaria</string>
+    <string name="notify_quote_desc">Recibe la frase del día</string>
+    <string name="data_export">Exportar datos</string>
+    <string name="data_export_desc">Guarda una copia local en un archivo que tú eliges</string>
+    <string name="data_import">Importar datos</string>
+    <string name="data_import_desc">Reemplaza los datos actuales con los de un archivo exportado antes</string>
+    <string name="data_import_message">Esto reemplazará todos los hábitos, motivos e historial actuales con el contenido del archivo elegido. Esta acción no se puede deshacer.</string>
+    <string name="data_import_confirm">Reemplazar</string>
+    <string name="data_delete_all">Borrar todos los datos</string>
+    <string name="data_delete_all_message">Se eliminarán todos tus hábitos, motivos e historial de forma permanente e irreversible. Considera exportar una copia antes de continuar.</string>
+    <string name="data_delete_all_confirm">Borrar todo</string>
+    <string name="data_title">Datos</string>
+    <string name="data_export_ok">Copia exportada correctamente</string>
+    <string name="data_export_failed">No se pudo exportar: %1$s</string>
+    <string name="data_import_ok">Importados %1$d hábitos. Se reemplazaron los datos anteriores.</string>
+    <string name="data_import_failed">No se pudo importar: %1$s</string>
+    <string name="data_delete_failed">No se pudo borrar todo: %1$s</string>
+    <string name="data_read_failed">No se pudo leer el archivo</string>
+    <string name="data_write_failed">No se pudo abrir el archivo destino</string>
+    <string name="data_version_too_new">Este archivo es de una versión más nueva de OpenZilla</string>
+    <string name="about_body">100% local y de código abierto. Sin anuncios, sin compras, sin cuentas ni conexión a internet: tus datos nunca salen de este dispositivo salvo que tú los exportes.</string>
+
+    <!-- Bloqueo -->
+    <string name="lock_title">OpenZilla está bloqueada</string>
+    <string name="lock_subtitle">Introduce tu PIN para continuar</string>
+    <string name="lock_field">PIN</string>
+    <string name="lock_wrong">PIN incorrecto</string>
+    <string name="lock_unlock">Desbloquear</string>
+
+    <!-- Estadísticas generales -->
+    <string name="gstats_title">Estadísticas</string>
+    <string name="gstats_empty">Añade algún hábito para ver aquí tus estadísticas.</string>
+    <string name="gstats_habits">Hábitos</string>
+    <string name="gstats_clean_time">Tiempo acumulado</string>
+    <string name="gstats_best">Mejor racha</string>
+    <string name="gstats_relapses">Recaídas</string>
+    <string name="gstats_ranking">Rachas actuales</string>
+    <string name="gstats_ranking_hint">Comparativa de todos tus hábitos ahora mismo.</string>
+    <string name="gstats_by_month">Recaídas por mes</string>
+    <string name="gstats_by_month_hint">Últimos 6 meses. Cuanto más bajas, mejor.</string>
+    <string name="gstats_no_relapses">Todavía no has registrado ninguna recaída.</string>
+    <string name="gstats_savings">Lo que llevas ganado</string>
+    <string name="gstats_money">Dinero ahorrado</string>
+    <string name="gstats_time">Tiempo recuperado</string>
+    <string name="gstats_hours">%1$s h</string>
+    <string name="gstats_by_type">Reparto por tipo</string>
+
+    <!-- Frases motivacionales. Los dos arrays van emparejados por posición. -->
+    <string-array name="quote_texts">
+        <item>Un viaje de mil millas comienza con el primer paso.</item>
+        <item>No cuentes los días, haz que los días cuenten.</item>
+        <item>La disciplina es elegir entre lo que quieres ahora y lo que quieres más.</item>
+        <item>Cada día es una nueva oportunidad para cambiar tu vida.</item>
+        <item>El hábito es al principio como una tela de araña; al final, como un cable de acero.</item>
+        <item>No se trata de ser perfecto, se trata de no rendirse.</item>
+        <item>Tu futuro se crea por lo que haces hoy, no mañana.</item>
+        <item>La libertad empieza donde termina la dependencia.</item>
+        <item>Pequeños pasos diarios llevan a grandes cambios.</item>
+        <item>Eres más fuerte que cualquier excusa.</item>
+    </string-array>
+    <string-array name="quote_authors">
+        <item>Lao Tzu</item>
+        <item>Muhammad Ali</item>
+        <item>Anónimo</item>
+        <item>Anónimo</item>
+        <item>Proverbio chino</item>
+        <item>Anónimo</item>
+        <item>Robert Kiyosaki</item>
+        <item>Anónimo</item>
+        <item>Anónimo</item>
+        <item>Anónimo</item>
+    </string-array>
 </resources>

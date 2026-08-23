@@ -3,8 +3,10 @@ package com.openzilla.app.ui.addhabit
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.openzilla.app.R
 import com.openzilla.app.data.HabitCostType
 import com.openzilla.app.data.HabitEntity
 import com.openzilla.app.data.HabitRepository
@@ -23,6 +25,7 @@ data class AddHabitUiState(
 )
 
 class AddHabitViewModel(
+    private val context: Context,
     private val repository: HabitRepository,
     private val editingHabitId: Long?
 ) : ViewModel() {
@@ -63,10 +66,10 @@ class AddHabitViewModel(
 
     fun save(onDone: () -> Unit, onError: (String) -> Unit) {
         val trimmedName = state.name.trim()
-        if (trimmedName.isEmpty()) { onError("Ponle un nombre al hábito"); return }
+        if (trimmedName.isEmpty()) { onError(context.getString(R.string.error_need_name)); return }
         val amount = state.weeklyAmountText.replace(',', '.').toDoubleOrNull()
         if (state.costType == HabitCostType.MONEY && amount != null && amount < 0) {
-            onError("El gasto no puede ser negativo"); return
+            onError(context.getString(R.string.error_negative_amount)); return
         }
 
         viewModelScope.launch {
@@ -96,7 +99,7 @@ class AddHabitViewModel(
                     )
                 ).map { }
             }
-            result.onSuccess { onDone() }.onFailure { onError(it.message ?: "No se pudo guardar") }
+            result.onSuccess { onDone() }.onFailure { onError(it.message ?: context.getString(R.string.error_save_failed)) }
         }
     }
 }

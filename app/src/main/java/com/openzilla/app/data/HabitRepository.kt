@@ -35,6 +35,7 @@ class HabitRepository(context: Context) {
     fun cachedHabit(id: Long): HabitEntity? = habitCache[id]
     fun observeReasons(habitId: Long): Flow<List<ReasonEntity>> = reasonDao.observeForHabit(habitId)
     fun observeHistory(habitId: Long): Flow<List<HistoryEntity>> = historyDao.observeForHabit(habitId)
+    fun observeAllHistory(): Flow<List<HistoryEntity>> = historyDao.observeAll()
 
     /** New habits go to the end of the list; the user can drag them anywhere afterwards. */
     suspend fun addHabit(habit: HabitEntity): Result<Long> = runCatching {

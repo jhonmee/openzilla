@@ -19,6 +19,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.openzilla.app.R
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,22 +38,25 @@ private const val SELECTION_FEEDBACK_MILLIS = 160L
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CategoryPickerScreen(onBack: () -> Unit, onPick: (HabitCategory) -> Unit) {
+fun CategoryPickerScreen(onBack: () -> Unit, onPick: (HabitCategory, String) -> Unit) {
     // La fila tocada se queda pintada un instante antes de avanzar: sin esto la pantalla
     // cambia en el mismo frame del toque y no da tiempo a ver ninguna respuesta.
     val haptics = rememberHaptics()
     var picked by remember { mutableStateOf<HabitCategory?>(null) }
+    // La etiqueta se resuelve aquí, donde hay acceso a recursos, y viaja con la categoría:
+    // quien la recibe la usa como nombre por defecto del hábito.
+    val pickedLabel = picked?.let { stringResource(it.labelRes) }
     LaunchedEffect(picked) {
         val category = picked ?: return@LaunchedEffect
         delay(SELECTION_FEEDBACK_MILLIS)
-        onPick(category)
+        onPick(category, pickedLabel.orEmpty())
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("¿Qué quieres dejar?") },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, contentDescription = "Atrás") } }
+                title = { Text(stringResource(R.string.picker_title)) },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back)) } }
             )
         }
     ) { padding ->
@@ -63,7 +68,7 @@ fun CategoryPickerScreen(onBack: () -> Unit, onPick: (HabitCategory) -> Unit) {
                     label = "categoria-seleccionada"
                 )
                 ListItem(
-                    headlineContent = { Text(category.label) },
+                    headlineContent = { Text(stringResource(category.labelRes)) },
                     leadingContent = {
                         Icon(category.icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(28.dp))
                     },

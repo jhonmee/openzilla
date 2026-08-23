@@ -1,5 +1,8 @@
 package com.openzilla.app
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.content.res.Configuration
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -15,6 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.openzilla.app.data.AppSettings
+import com.openzilla.app.data.SettingsRepository
 import com.openzilla.app.data.ThemeMode
 import com.openzilla.app.ui.LocalHapticsEnabled
 import com.openzilla.app.ui.navigation.OpenZillaNavHost
@@ -22,6 +26,7 @@ import com.openzilla.app.ui.settings.PinLockScreen
 import com.openzilla.app.ui.theme.OpenZillaTheme
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import java.util.Locale
 
 /**
  * The one and only Activity. It just hosts Compose; all real logic lives in ViewModels and
@@ -29,6 +34,19 @@ import kotlinx.coroutines.runBlocking
  * lifecycle can most easily leak — tiny and stateless.
  */
 class MainActivity : ComponentActivity() {
+
+    /**
+     * The chosen language has to be in place before any resource is read, and that happens
+     * here — earlier than [onCreate]. Reading it needs a blocking call, which is acceptable
+     * exactly once at startup for a tiny local file that DataStore then keeps in memory.
+     */
+    override fun attachBaseContext(newBase: Context) {
+        val tag = runCatching {
+            runBlocking { SettingsRepository(newBase).settings.first().language.tag }
+        }.getOrNull()
+        super.attachBaseContext(if (tag == null) newBase else newBase.withLanguage(tag))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -38,8 +56,6 @@ class MainActivity : ComponentActivity() {
         // Los ajustes se leen aquí, antes de componer nada. Colgarlos de un Flow con valores
         // por defecto hacía que los primeros frames se dibujaran con el tema equivocado y el
         // color correcto entrara después: un cambio breve pero perfectamente visible.
-        // La lectura es un fichero local diminuto y DataStore lo mantiene en memoria a
-        // partir de ahí, así que el bloqueo es de milisegundos y ocurre una sola vez.
         val initialSettings = runCatching {
             runBlocking { app.settingsRepository.settings.first() }
         }.getOrDefault(AppSettings())
@@ -74,6 +90,24 @@ class MainActivity : ComponentActivity() {
             ThemeMode.SYSTEM -> if (systemInDark) 0xFF121212.toInt() else 0xFFF7F7F8.toInt()
         }
     }
+}
+
+private fun Context.withLanguage(tag: String): Context {
+    val locale = Locale.forLanguageTag(tag)
+    Locale.setDefault(locale)
+    val config = Configuration(resources.configuration)
+    config.setLocale(locale)
+    return createConfigurationContext(config)
+}
+
+/** Walks up the context chain to the hosting Activity, needed to restart it on a language change. */
+fun Context.findActivity(): Activity? {
+    var context = this
+    while (context is ContextWrapper) {
+        if (context is Activity) return context
+        context = context.baseContext
+    }
+    return null
 }
 
 @Composable

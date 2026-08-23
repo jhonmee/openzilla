@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    English translation. The default (Spanish) lives in res/values/strings.xml; any key
+    missing here falls back to it, so a gap shows up as Spanish text rather than a crash.
+-->
+<resources>
+    <!-- Notifications -->
+    <string name="notif_daily_quote_title">Today\'s motivation</string>
+    <string name="notif_progress_title">New achievement!</string>
+    <string name="notif_progress_body">%1$s: you reached the \"%2$s\" milestone</string>
+    <string name="notif_channel_desc">Daily motivation and progress milestones</string>
+
+    <!-- Common actions -->
+    <string name="action_back">Back</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_close">Close</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_understood">Got it</string>
+    <string name="action_next">Next</string>
+    <string name="action_finish">Finish</string>
+    <string name="action_more_options">More options</string>
+    <string name="action_edit">Edit</string>
+    <string name="error_title">Something went wrong</string>
+
+    <!-- Home -->
+    <string name="home_settings">Settings</string>
+    <string name="home_stats">Statistics</string>
+    <string name="home_add_habit">Add habit</string>
+    <string name="home_empty">Tap + to add the first habit you want to quit</string>
+    <string name="home_since">Clean for %1$s</string>
+    <string name="home_goal">Goal: %1$s</string>
+    <string name="home_reset_counter">Reset counter</string>
+    <string name="delete_habit_title">Delete \"%1$s\"</string>
+    <string name="delete_habit_message">This habit and its whole history will be permanently deleted. This cannot be undone.</string>
+
+    <!-- Add habit wizard -->
+    <string name="wizard_name_icon">Name and icon</string>
+    <string name="wizard_type">Habit type</string>
+    <string name="wizard_date">Last time</string>
+    <string name="wizard_goal">Your first goal</string>
+    <string name="wizard_edit">Edit habit</string>
+    <string name="wizard_step">Step %1$d of %2$d</string>
+    <string name="wizard_question">Which habit or addiction do you want to quit?</string>
+    <string name="wizard_name_label">Name</string>
+    <string name="wizard_change_icon">Change icon</string>
+    <string name="wizard_pick_icon">Pick an icon</string>
+    <string name="wizard_select_type">Choose the type</string>
+    <string name="wizard_when_last">When was the last time?</string>
+    <string name="wizard_counter_starts">The counter starts from this moment.</string>
+    <string name="wizard_first_goal">What is your first goal?</string>
+    <string name="wizard_goal_explain">Once you reach it, OpenZilla moves on to the next step of the ladder by itself (1 day, 3 days, 1 week, 2 weeks, 1 month…), so the counter never drops back to zero for having made it.</string>
+    <string name="wizard_missing_title">Something is missing</string>
+    <string name="type_money">Money</string>
+    <string name="type_money_desc">This habit costs you money. For example: smoking, drinking.</string>
+    <string name="type_money_question">How much do you spend on it per week?</string>
+    <string name="type_time">Time</string>
+    <string name="type_time_desc">This habit is a waste of time. For example: video games, procrastination.</string>
+    <string name="type_time_question">How many hours a week do you spend on it?</string>
+    <string name="type_event">Event</string>
+    <string name="type_event_desc">This habit costs neither money nor time, but the event itself harms you.</string>
+    <string name="error_need_name">Give the habit a name</string>
+    <string name="error_negative_amount">The amount cannot be negative</string>
+    <string name="error_save_failed">Could not save</string>
+    <string name="error_delete_failed">Could not delete</string>
+    <string name="error_reset_failed">Could not reset</string>
+    <string name="error_order_failed">Could not save the new order</string>
+    <string name="error_reason_failed">Could not save the reason</string>
+    <string name="error_relapse_failed">Could not record the relapse</string>
+
+    <!-- Category picker -->
+    <string name="picker_title">What do you want to quit?</string>
+    <string name="category_generic">Addiction / habit</string>
+    <string name="category_smoking">Smoking</string>
+    <string name="category_alcohol">Alcohol</string>
+    <string name="category_drugs">Drugs</string>
+    <string name="category_pills">Pills</string>
+    <string name="category_weed">Cannabis</string>
+    <string name="category_adult">Adult content</string>
+    <string name="category_gaming">Video games</string>
+    <string name="category_tv">Watching TV</string>
+    <string name="category_shopping">Impulse shopping</string>
+    <string name="category_social">Social media</string>
+    <string name="category_streaming">Videos / streaming</string>
+    <string name="category_crowds">Over-socialising</string>
+    <string name="category_fastfood">Fast food</string>
+    <string name="category_sweets">Sweets</string>
+    <string name="category_overeating">Overeating</string>
+    <string name="category_custom">Custom</string>
+
+    <!-- Detail -->
+    <string name="tab_summary">Summary</string>
+    <string name="tab_motivation">Motivation</string>
+    <string name="tab_progress">Progress</string>
+    <string name="tab_trophies">Trophies</string>
+    <string name="reset_title">Reset counter</string>
+    <string name="reset_message">Your current streak will be saved to the history and the counter will start again from now. This does not delete any past data.</string>
+    <string name="reset_confirm">Reset</string>
+
+    <!-- Summary -->
+    <string name="summary_time_clean">Time without relapses</string>
+    <string name="summary_remaining">%1$s to go</string>
+    <string name="summary_max_goal">Top goal reached!</string>
+    <string name="summary_register_relapse_now">Record a relapse now</string>
+    <string name="relapse_title">Record relapse</string>
+    <string name="relapse_message">A relapse will be recorded on %1$s. The current streak will be saved to the history and the counter will start again from that day.</string>
+    <string name="relapse_confirm">Record</string>
+
+    <!-- Calendar -->
+    <string name="calendar_prev_month">Previous month</string>
+    <string name="calendar_next_month">Next month</string>
+    <string name="calendar_days_done_one">1 day held</string>
+    <string name="calendar_days_done_other">%1$d days held</string>
+    <string name="calendar_legend_done">Held</string>
+    <string name="calendar_legend_relapse">Relapse</string>
+    <string name="calendar_legend_today">Today</string>
+    <string name="calendar_hint">Tap a day of your current streak to record a relapse on that date.</string>
+    <string-array name="weekday_short">
+        <item>sun</item>
+        <item>mon</item>
+        <item>tue</item>
+        <item>wed</item>
+        <item>thu</item>
+        <item>fri</item>
+        <item>sat</item>
+    </string-array>
+
+    <!-- Motivation -->
+    <string name="motivation_add_reason">Add reason</string>
+    <string name="motivation_quote_title">Quote of the day</string>
+    <string name="motivation_your_reasons">Your reasons to quit</string>
+    <string name="motivation_no_reasons">You have not written any reason yet. Tap + to add one.</string>
+    <string name="motivation_new_reason">New reason</string>
+    <string name="motivation_why">Why do you want to quit?</string>
+    <string name="motivation_delete_reason">Delete reason</string>
+    <string name="savings_title">What you have gained</string>
+    <string name="savings_money">You have saved roughly %1$s</string>
+    <string name="savings_time">You have won back roughly %1$s hours of your time</string>
+    <string name="savings_days">You have spent %1$s days choosing a healthier life.</string>
+
+    <!-- Progress -->
+    <string name="stats_current_streak">Current streak</string>
+    <string name="stats_best_streak">Best streak</string>
+    <string name="stats_relapses">Relapses</string>
+    <string name="stats_average">Average streak</string>
+    <string name="stats_history_title">Streak history</string>
+    <string name="stats_history_hint">Each bar is a completed streak; the last one is still running.</string>
+    <string name="stats_now">Now</string>
+    <string name="stats_relapses_logged">Recorded relapses</string>
+    <string name="stats_held">held for %1$s</string>
+
+    <!-- Trophies -->
+    <string name="trophy_achieved">Achieved!</string>
+    <string name="trophy_in_progress">In progress</string>
+    <string name="trophy_24h">24 hours</string>
+    <string name="trophy_3d">3 days</string>
+    <string name="trophy_1w">1 week</string>
+    <string name="trophy_2w">2 weeks</string>
+    <string name="trophy_1mo">1 month</string>
+    <string name="trophy_3mo">3 months</string>
+    <string name="trophy_6mo">6 months</string>
+    <string name="trophy_1y">1 year</string>
+    <string name="trophy_2y">2 years</string>
+
+    <!-- Goals -->
+    <string name="goal_6h">6 hours</string>
+    <string name="goal_12h">12 hours</string>
+    <string name="goal_1d">1 day</string>
+    <string name="goal_3d">3 days</string>
+    <string name="goal_1w">1 week</string>
+    <string name="goal_2w">2 weeks</string>
+    <string name="goal_1mo">1 month</string>
+    <string name="goal_3mo">3 months</string>
+    <string name="goal_6mo">6 months</string>
+    <string name="goal_1y">1 year</string>
+    <string name="goal_2y">2 years</string>
+    <string name="goal_5y">5 years</string>
+    <string name="goal_hours_generic">%1$d hours</string>
+    <string name="goal_days_generic">%1$d days</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="section_appearance">Appearance</string>
+    <string name="section_general">General</string>
+    <string name="section_security">Security</string>
+    <string name="section_notifications">Notifications</string>
+    <string name="section_data">Data</string>
+    <string name="section_about">About</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_oled">Black (OLED)</string>
+    <string name="dynamic_colors_title">Use system colours</string>
+    <string name="dynamic_colors_desc">Takes the accent colour from your wallpaper (Material You). While this is on, picking a colour by hand is disabled.</string>
+    <string name="color_light">Colour — light mode</string>
+    <string name="color_dark">Colour — dark mode</string>
+    <string name="color_selected">Selected</string>
+    <string name="haptics_title">Vibrate on touch</string>
+    <string name="haptics_desc">Short haptic feedback on buttons and actions. It always respects your system vibration setting.</string>
+    <string name="language_title">Language</string>
+    <string name="language_dialog_title">Choose a language</string>
+    <string name="language_system">System language</string>
+    <string name="language_spanish">Spanish</string>
+    <string name="language_english">English</string>
+    <string name="currency_title">Currency</string>
+    <string name="currency_dialog_title">Currency symbol</string>
+    <string name="currency_hint">e.g. $, €, £</string>
+    <string name="pin_activate">Turn on PIN lock</string>
+    <string name="pin_change">Change PIN</string>
+    <string name="pin_desc">Protects the app with a local code. It never leaves your device.</string>
+    <string name="pin_remove">Remove PIN</string>
+    <string name="pin_remove_message">The app will stop asking for a code when it opens.</string>
+    <string name="pin_remove_confirm">Remove</string>
+    <string name="pin_dialog_title">Choose a PIN</string>
+    <string name="pin_field">PIN (4-8 digits)</string>
+    <string name="pin_repeat">Repeat the PIN</string>
+    <string name="notify_progress">Progress alerts</string>
+    <string name="notify_progress_desc">Get a notification when you reach a milestone</string>
+    <string name="notify_quote">Daily motivation</string>
+    <string name="notify_quote_desc">Get the quote of the day</string>
+    <string name="data_export">Export data</string>
+    <string name="data_export_desc">Saves a local copy to a file you choose</string>
+    <string name="data_import">Import data</string>
+    <string name="data_import_desc">Replaces the current data with a file exported earlier</string>
+    <string name="data_import_message">This will replace every habit, reason and history entry with the contents of the chosen file. This cannot be undone.</string>
+    <string name="data_import_confirm">Replace</string>
+    <string name="data_delete_all">Delete all data</string>
+    <string name="data_delete_all_message">Every habit, reason and history entry will be permanently and irreversibly deleted. Consider exporting a copy first.</string>
+    <string name="data_delete_all_confirm">Delete everything</string>
+    <string name="data_title">Data</string>
+    <string name="data_export_ok">Copy exported successfully</string>
+    <string name="data_export_failed">Could not export: %1$s</string>
+    <string name="data_import_ok">Imported %1$d habits. The previous data was replaced.</string>
+    <string name="data_import_failed">Could not import: %1$s</string>
+    <string name="data_delete_failed">Could not delete everything: %1$s</string>
+    <string name="data_read_failed">Could not read the file</string>
+    <string name="data_write_failed">Could not open the destination file</string>
+    <string name="data_version_too_new">This file comes from a newer version of OpenZilla</string>
+    <string name="about_body">100% local and open source. No ads, no purchases, no accounts and no internet connection: your data never leaves this device unless you export it yourself.</string>
+
+    <!-- Lock -->
+    <string name="lock_title">OpenZilla is locked</string>
+    <string name="lock_subtitle">Enter your PIN to continue</string>
+    <string name="lock_field">PIN</string>
+    <string name="lock_wrong">Wrong PIN</string>
+    <string name="lock_unlock">Unlock</string>
+
+    <!-- General statistics -->
+    <string name="gstats_title">Statistics</string>
+    <string name="gstats_empty">Add a habit to see your statistics here.</string>
+    <string name="gstats_habits">Habits</string>
+    <string name="gstats_clean_time">Total time</string>
+    <string name="gstats_best">Best streak</string>
+    <string name="gstats_relapses">Relapses</string>
+    <string name="gstats_ranking">Current streaks</string>
+    <string name="gstats_ranking_hint">All your habits side by side, right now.</string>
+    <string name="gstats_by_month">Relapses per month</string>
+    <string name="gstats_by_month_hint">Last 6 months. The lower, the better.</string>
+    <string name="gstats_no_relapses">You have not recorded any relapse yet.</string>
+    <string name="gstats_savings">What you have gained</string>
+    <string name="gstats_money">Money saved</string>
+    <string name="gstats_time">Time won back</string>
+    <string name="gstats_hours">%1$s h</string>
+    <string name="gstats_by_type">Split by type</string>
+
+    <!-- Motivational quotes. Both arrays are paired by position. -->
+    <string-array name="quote_texts">
+        <item>A journey of a thousand miles begins with a single step.</item>
+        <item>Don\'t count the days, make the days count.</item>
+        <item>Discipline is choosing between what you want now and what you want most.</item>
+        <item>Every day is a new chance to change your life.</item>
+        <item>A habit starts as a cobweb and ends up a steel cable.</item>
+        <item>It is not about being perfect, it is about not giving up.</item>
+        <item>Your future is created by what you do today, not tomorrow.</item>
+        <item>Freedom starts where dependency ends.</item>
+        <item>Small daily steps lead to big changes.</item>
+        <item>You are stronger than any excuse.</item>
+    </string-array>
+    <string-array name="quote_authors">
+        <item>Lao Tzu</item>
+        <item>Muhammad Ali</item>
+        <item>Anonymous</item>
+        <item>Anonymous</item>
+        <item>Chinese proverb</item>
+        <item>Anonymous</item>
+        <item>Robert Kiyosaki</item>
+        <item>Anonymous</item>
+        <item>Anonymous</item>
+        <item>Anonymous</item>
+    </string-array>
+</resources>

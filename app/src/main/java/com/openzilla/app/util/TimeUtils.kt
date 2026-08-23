@@ -1,5 +1,7 @@
 package com.openzilla.app.util
 
+import androidx.annotation.StringRes
+import com.openzilla.app.R
 import java.util.concurrent.TimeUnit
 
 data class ElapsedParts(val days: Long, val hours: Long, val minutes: Long, val seconds: Long)
@@ -36,37 +38,30 @@ fun formatElapsedShort(startedAt: Long, now: Long = System.currentTimeMillis()):
  * then on the app moves to the next rung on its own each time one is reached, so the gauge
  * always measures against something still ahead instead of restarting from zero.
  */
-data class GoalStep(val hours: Int, val label: String)
+data class GoalStep(val hours: Int, @StringRes val labelRes: Int)
 
 /** Hours are exact (30-day months, 365-day years) so a goal never drifts against the counter. */
 val GOAL_SCALE: List<GoalStep> = listOf(
-    GoalStep(6, "6 horas"),
-    GoalStep(12, "12 horas"),
-    GoalStep(24, "1 día"),
-    GoalStep(72, "3 días"),
-    GoalStep(168, "1 semana"),
-    GoalStep(336, "2 semanas"),
-    GoalStep(720, "1 mes"),
-    GoalStep(2_160, "3 meses"),
-    GoalStep(4_368, "6 meses"),
-    GoalStep(8_760, "1 año"),
-    GoalStep(17_520, "2 años"),
-    GoalStep(43_800, "5 años")
+    GoalStep(6, R.string.goal_6h),
+    GoalStep(12, R.string.goal_12h),
+    GoalStep(24, R.string.goal_1d),
+    GoalStep(72, R.string.goal_3d),
+    GoalStep(168, R.string.goal_1w),
+    GoalStep(336, R.string.goal_2w),
+    GoalStep(720, R.string.goal_1mo),
+    GoalStep(2_160, R.string.goal_3mo),
+    GoalStep(4_368, R.string.goal_6mo),
+    GoalStep(8_760, R.string.goal_1y),
+    GoalStep(17_520, R.string.goal_2y),
+    GoalStep(43_800, R.string.goal_5y)
 )
 
 /** Goals offered when creating or editing a habit; past the last one the ladder continues by itself. */
 val SELECTABLE_GOALS: List<GoalStep> = GOAL_SCALE.take(8)
 
-fun goalLabel(hours: Int): String {
-    GOAL_SCALE.firstOrNull { it.hours == hours }?.let { return it.label }
-    val days = hours / 24
-    return when {
-        hours < 24 -> "$hours horas"
-        hours % 24 == 0 && days == 1 -> "1 día"
-        hours % 24 == 0 -> "$days días"
-        else -> "$hours horas"
-    }
-}
+/** The ladder's own label for [hours], or null for a value that is not one of its rungs. */
+@StringRes
+fun goalLabelRes(hours: Int): Int? = GOAL_SCALE.firstOrNull { it.hours == hours }?.labelRes
 
 /**
  * The goal currently being worked toward: the first rung strictly greater than the time

@@ -19,7 +19,9 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.Vaccines
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.WavingHand
+import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.openzilla.app.R
 import com.openzilla.app.data.HabitCostType
 
 /**
@@ -27,24 +29,24 @@ import com.openzilla.app.data.HabitCostType
  * generic, license-clean glyphs — rather than reproducing any brand's logo, so this stays a
  * fresh, generic app and not a lookalike of any specific service.
  */
-enum class HabitCategory(val key: String, val label: String, val icon: ImageVector, val suggestedType: HabitCostType) {
-    GENERIC("generic", "Adicción / hábito", Icons.Filled.Block, HabitCostType.EVENT),
-    SMOKING("smoking", "Fumar", Icons.Filled.SmokingRooms, HabitCostType.MONEY),
-    ALCOHOL("alcohol", "Alcohol", Icons.Filled.LocalBar, HabitCostType.MONEY),
-    DRUGS("drugs", "Drogas", Icons.Filled.Vaccines, HabitCostType.MONEY),
-    PILLS("pills", "Pastillas", Icons.Filled.Medication, HabitCostType.MONEY),
-    WEED("weed", "Marihuana", Icons.Filled.Grass, HabitCostType.MONEY),
-    ADULT_CONTENT("adult", "Contenido adulto", Icons.Filled.Visibility, HabitCostType.TIME),
-    GAMING("gaming", "Videojuegos", Icons.Filled.SportsEsports, HabitCostType.TIME),
-    TV("tv", "Ver televisión", Icons.Filled.Tv, HabitCostType.TIME),
-    SHOPPING("shopping", "Compras impulsivas", Icons.Filled.ShoppingBag, HabitCostType.MONEY),
-    SOCIAL("social", "Redes sociales", Icons.Filled.Forum, HabitCostType.TIME),
-    STREAMING("streaming", "Vídeos / streaming", Icons.Filled.PlayCircle, HabitCostType.TIME),
-    SOCIALIZING("crowds", "Socializar en exceso", Icons.Filled.Groups, HabitCostType.TIME),
-    FAST_FOOD("fastfood", "Comida rápida", Icons.Filled.Fastfood, HabitCostType.MONEY),
-    SWEETS("sweets", "Dulces", Icons.Filled.Cake, HabitCostType.MONEY),
-    OVEREATING("overeating", "Comer en exceso", Icons.Filled.DinnerDining, HabitCostType.EVENT),
-    CUSTOM("custom", "Personalizado", Icons.Outlined.WavingHand, HabitCostType.EVENT);
+enum class HabitCategory(val key: String, @StringRes val labelRes: Int, val icon: ImageVector, val suggestedType: HabitCostType) {
+    GENERIC("generic", R.string.category_generic, Icons.Filled.Block, HabitCostType.EVENT),
+    SMOKING("smoking", R.string.category_smoking, Icons.Filled.SmokingRooms, HabitCostType.MONEY),
+    ALCOHOL("alcohol", R.string.category_alcohol, Icons.Filled.LocalBar, HabitCostType.MONEY),
+    DRUGS("drugs", R.string.category_drugs, Icons.Filled.Vaccines, HabitCostType.MONEY),
+    PILLS("pills", R.string.category_pills, Icons.Filled.Medication, HabitCostType.MONEY),
+    WEED("weed", R.string.category_weed, Icons.Filled.Grass, HabitCostType.MONEY),
+    ADULT_CONTENT("adult", R.string.category_adult, Icons.Filled.Visibility, HabitCostType.TIME),
+    GAMING("gaming", R.string.category_gaming, Icons.Filled.SportsEsports, HabitCostType.TIME),
+    TV("tv", R.string.category_tv, Icons.Filled.Tv, HabitCostType.TIME),
+    SHOPPING("shopping", R.string.category_shopping, Icons.Filled.ShoppingBag, HabitCostType.MONEY),
+    SOCIAL("social", R.string.category_social, Icons.Filled.Forum, HabitCostType.TIME),
+    STREAMING("streaming", R.string.category_streaming, Icons.Filled.PlayCircle, HabitCostType.TIME),
+    SOCIALIZING("crowds", R.string.category_crowds, Icons.Filled.Groups, HabitCostType.TIME),
+    FAST_FOOD("fastfood", R.string.category_fastfood, Icons.Filled.Fastfood, HabitCostType.MONEY),
+    SWEETS("sweets", R.string.category_sweets, Icons.Filled.Cake, HabitCostType.MONEY),
+    OVEREATING("overeating", R.string.category_overeating, Icons.Filled.DinnerDining, HabitCostType.EVENT),
+    CUSTOM("custom", R.string.category_custom, Icons.Outlined.WavingHand, HabitCostType.EVENT);
 
     companion object {
         fun byKey(key: String): HabitCategory = entries.firstOrNull { it.key == key } ?: GENERIC

@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.QueryStats
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -37,20 +38,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.openzilla.app.R
 import com.openzilla.app.data.HabitEntity
 import com.openzilla.app.ui.components.ConfirmDialog
 import com.openzilla.app.ui.components.ProgressWaveBar
 import com.openzilla.app.ui.components.rememberNowTicker
 import com.openzilla.app.ui.components.rememberReorderState
 import com.openzilla.app.ui.components.reorderableItem
+import com.openzilla.app.ui.goalLabel
 import com.openzilla.app.ui.rememberHaptics
 import com.openzilla.app.ui.rememberOpenZillaViewModel
 import com.openzilla.app.util.HabitCategory
 import com.openzilla.app.util.currentGoalHours
 import com.openzilla.app.util.formatElapsedShort
-import com.openzilla.app.util.goalLabel
 import com.openzilla.app.util.goalPercentText
 import com.openzilla.app.util.goalProgress
 
@@ -59,9 +62,10 @@ import com.openzilla.app.util.goalProgress
 fun HomeScreen(
     onAddHabit: () -> Unit,
     onOpenHabit: (Long) -> Unit,
+    onOpenStats: () -> Unit,
     onOpenSettings: () -> Unit
 ) {
-    val viewModel = rememberOpenZillaViewModel { HomeViewModel(it.repository) }
+    val viewModel = rememberOpenZillaViewModel { HomeViewModel(it, it.repository) }
     val habits by viewModel.habits.collectAsStateWithLifecycle()
     var pendingDelete by remember { mutableStateOf<HabitEntity?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -97,17 +101,26 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("OpenZilla") },
+                title = { Text(stringResource(R.string.app_name)) },
                 actions = {
+                    IconButton(onClick = { haptics.tap(); onOpenStats() }) {
+                        Icon(Icons.Filled.QueryStats, contentDescription = stringResource(R.string.home_stats))
+                    }
                     IconButton(onClick = { haptics.tap(); onOpenSettings() }) {
-                        Icon(Icons.Filled.Settings, contentDescription = "Ajustes")
+                        Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.home_settings))
                     }
                 }
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { haptics.tap(); onAddHabit() }) {
-                Icon(Icons.Filled.Add, contentDescription = "Añadir hábito")
+            // Colores explícitos: por defecto el FAB usa primaryContainer, que sin definir
+            // se quedaba en el morado base de Material en vez de seguir al acento elegido.
+            FloatingActionButton(
+                onClick = { haptics.tap(); onAddHabit() },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ) {
+                Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.home_add_habit))
             }
         }
     ) { padding ->
@@ -118,7 +131,7 @@ fun HomeScreen(
             current == null -> Box(Modifier.fillMaxSize().padding(padding))
 
             current.isEmpty() -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                Text("Toca + para registrar el primer hábito que quieres dejar", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.home_empty), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
 
             else -> LazyColumn(
@@ -158,8 +171,8 @@ fun HomeScreen(
 
     pendingDelete?.let { habit ->
         ConfirmDialog(
-            title = "Eliminar \"${habit.name}\"",
-            message = "Se borrará este hábito y todo su historial de forma permanente. Esta acción no se puede deshacer.",
+            title = stringResource(R.string.delete_habit_title, habit.name),
+            message = stringResource(R.string.delete_habit_message),
             onConfirm = {
                 haptics.confirm()
                 viewModel.deleteHabit(habit) { error = it }
@@ -171,9 +184,9 @@ fun HomeScreen(
 
     error?.let { msg ->
         ConfirmDialog(
-            title = "Ocurrió un problema",
+            title = stringResource(R.string.error_title),
             message = msg,
-            confirmLabel = "Cerrar",
+            confirmLabel = stringResource(R.string.action_close),
             onConfirm = { error = null },
             onDismiss = { error = null }
         )
@@ -205,25 +218,22 @@ private fun HabitCard(
                     Text(habit.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 12.dp))
                 }
                 Box {
-                    IconButton(onClick = { menuOpen = true }) { Icon(Icons.Filled.MoreVert, contentDescription = "Más opciones") }
+                    IconButton(onClick = { menuOpen = true }) { Icon(Icons.Filled.MoreVert, contentDescription = stringResource(R.string.action_more_options)) }
                     DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                        DropdownMenuItem(text = { Text("Reiniciar contador") }, onClick = { menuOpen = false; onReset() })
-                        DropdownMenuItem(text = { Text("Eliminar") }, onClick = { menuOpen = false; onDelete() })
+                        DropdownMenuItem(text = { Text(stringResource(R.string.home_reset_counter)) }, onClick = { menuOpen = false; onReset() })
+                        DropdownMenuItem(text = { Text(stringResource(R.string.action_delete)) }, onClick = { menuOpen = false; onDelete() })
                     }
                 }
             }
             Text(
-                "Sin recaídas desde hace ${formatElapsedShort(habit.startedAt, now)}",
+                stringResource(R.string.home_since, formatElapsedShort(habit.startedAt, now)),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 8.dp)
             )
-            // Sin onda en la lista: aquí puede haber muchas tarjetas a la vez y basta con el
-            // dibujo estático.
             ProgressWaveBar(
                 progress = goalProgress(habit.startedAt, habit.goalHours, now),
                 barHeight = 10.dp,
-                animated = false,
                 modifier = Modifier.padding(top = 4.dp)
             )
             Row(
@@ -231,7 +241,7 @@ private fun HabitCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    "Meta: ${goalLabel(currentGoalHours(habit.startedAt, habit.goalHours, now))}",
+                    stringResource(R.string.home_goal, goalLabel(currentGoalHours(habit.startedAt, habit.goalHours, now))),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
