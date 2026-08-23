@@ -1,8 +1,15 @@
 # OpenZilla
 
-Aplicación Android de código abierto para llevar el control de hábitos y adicciones que
-quieres dejar (fumar, alcohol, redes sociales, compras impulsivas, etc.), inspirada en apps
-tipo "Quit That" pero pensada desde cero para ser **100% local y privada**.
+App para Android de código abierto para llevar el control de hábitos y adicciones que
+quieres dejar por ej (fumar, alcohol, redes sociales, compras impulsivas, etc), esta inspirada en apps
+tipo "Quit That" pero pensada desde cero para ser **100% local y privada**. 
+
+## Por qué existe??
+
+Es una alternativa gratuita que cree para uso personal para evitar apps similares que cobran por funciones básicas o
+que envían datos a servidores externos (enserio como vas a corar una suscripción mensual por una app que ni siquiera tiene servidores??).
+OpenZilla no lo hace: no tiene cuentas, no tiene compras dentro de la app, no tiene anuncios y no puede conectarse a internet aunque quisiera
+(el permiso `INTERNET` ni siquiera está declarado en el `AndroidManifest.xml`).
 
 ## Descargar
 
@@ -13,18 +20,11 @@ vez que se sube un cambio a `main`, GitHub Actions compila la app, sube el núme
 (1.0.1, 1.0.2, 1.0.3…) y publica una release nueva con el APK adjunto. Puedes ver todas en
 [Releases](https://github.com/jhonmee/openzilla/releases).
 
-Al instalarlo, Android pedirá permiso para instalar apps de origen desconocido: es lo normal
+Al instalarlo, Android pedirá permiso para instalar apps de origen desconocido: que es lo normal
 en cualquier app que no venga de una tienda. El APK va firmado con la clave de depuración de
 Android, que es la que permite publicarlo sin tener que guardar una clave privada en el
 repositorio; si algún día quieres firmarlo con una clave propia, basta con añadirla como
 secreto del repositorio y cambiar `assembleDebug` por `assembleRelease` en el flujo.
-
-## Por qué existe
-
-Es una alternativa gratuita y auditable a apps similares que cobran por funciones básicas o
-que envían datos a servidores externos. OpenZilla no lo hace: no tiene cuentas, no tiene
-compras dentro de la app, no tiene anuncios y no puede conectarse a internet aunque quisiera
-(el permiso `INTERNET` ni siquiera está declarado en el `AndroidManifest.xml`).
 
 ## Funciones
 
