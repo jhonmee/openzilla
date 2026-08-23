@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">OpenZilla</string>
+    <string name="notif_daily_quote_title">Motivación de hoy</string>
+    <string name="notif_progress_title">¡Nuevo logro!</string>
+    <string name="notif_progress_body">%1$s: alcanzaste el logro \"%2$s\"</string>
+</resources>
