@@ -15,16 +15,22 @@ compras dentro de la app, no tiene anuncios y no puede conectarse a internet aun
 
 - Registra cualquier hábito o adicción que quieras dejar, con icono, categoría y tipo de
   coste (dinero / tiempo / evento).
-- Contador de tiempo sin recaídas en tiempo real, con un indicador circular de progreso
-  hacia una meta configurable (24h por defecto, como en la app de referencia).
-- Calendario mensual que marca los días cubiertos por tu racha actual.
+- Contador de tiempo sin recaídas en tiempo real, con una barra de progreso hacia la meta
+  en curso (con una llama encendida en la punta del avance).
+- Escala de metas: eliges la primera al crear el hábito (6 h, 12 h, 1 día, 3 días, 1 semana…)
+  y, en cuanto la alcanzas, la app pasa sola a la siguiente. El progreso nunca se reinicia
+  por haber cumplido.
+- Calendario mensual que marca en color de acento los días que has cumplido y en rojo los
+  días en que hubo una recaída. Tocando un día de la racha actual puedes registrar una
+  recaída en esa fecha.
 - Frase motivacional del día y lista de motivos personales para dejar cada hábito.
 - Estimación de dinero ahorrado / tiempo recuperado según el tipo de hábito.
 - Estadísticas: racha actual, mejor racha histórica, número de recaídas, historial en
   gráfico de barras simple.
 - Sala de trofeos con logros por duración (24 horas, 3 días, 1 semana… hasta 2 años).
-- Tema claro/oscuro (o seguir al sistema), con color de acento personalizable por separado
-  para cada modo.
+- Temas claro, oscuro, negro puro (OLED) o seguir al sistema, con color de acento
+  personalizable por separado para cada modo. En Android 12 o superior puedes usar en su
+  lugar los colores del sistema (Material You), tomados de tu fondo de pantalla.
 - Bloqueo opcional de la app con PIN (nunca se guarda en texto plano; se guarda con hash
   PBKDF2 + salt dentro de un almacén cifrado con Android Keystore).
 - Exportar/importar todos tus datos a un archivo `.json` que tú eliges dónde guardar —no
@@ -88,7 +94,7 @@ app/src/main/java/com/openzilla/app/
   ui/addhabit/  Asistente para crear/editar un hábito
   ui/detail/    Pantalla de detalle con las 4 pestañas (Resumen, Motivación, Progreso, Trofeos)
   ui/settings/  Ajustes, bloqueo por PIN, exportar/importar, borrar datos
-  ui/components/Piezas reutilizables (medidor circular, calendario, diálogo de confirmación)
+  ui/components/Piezas reutilizables (barra de progreso con llama, calendario, confirmación)
   notification/ Notificaciones locales vía WorkManager
   util/         Categorías, formato de tiempo, trofeos, frases motivacionales
 ```

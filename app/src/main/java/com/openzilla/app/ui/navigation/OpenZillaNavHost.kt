@@ -1,5 +1,7 @@
 package com.openzilla.app.ui.navigation
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -25,7 +27,17 @@ private object Routes {
 fun OpenZillaNavHost(settings: AppSettings) {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = Routes.HOME) {
+    // Cambios de pantalla instantáneos: sin fundidos ni desplazamientos. Además de ser lo
+    // que se pidió, es la opción más barata posible — no hay ninguna animación que componer
+    // ni ninguna capa extra que dibujar durante la navegación.
+    NavHost(
+        navController = navController,
+        startDestination = Routes.HOME,
+        enterTransition = { EnterTransition.None },
+        exitTransition = { ExitTransition.None },
+        popEnterTransition = { EnterTransition.None },
+        popExitTransition = { ExitTransition.None }
+    ) {
         composable(Routes.HOME) {
             HomeScreen(
                 onAddHabit = { navController.navigate(Routes.addHabit()) },

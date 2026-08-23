@@ -50,6 +50,21 @@ class HabitDetailViewModel(private val repository: HabitRepository, private val 
         }
     }
 
+    /**
+     * Records a relapse on a day the user picked in the calendar. The instant is clamped to
+     * the current streak: a relapse can never land before the streak started nor in the
+     * future, so the counter cannot end up negative and past history is never rewritten.
+     */
+    fun registerRelapseAt(millis: Long) {
+        val current = habit.value ?: return
+        val now = System.currentTimeMillis()
+        val lower = minOf(current.startedAt, now)
+        val at = millis.coerceIn(lower, now)
+        viewModelScope.launch {
+            repository.resetHabit(current, at).onFailure { _errors.value = it.message ?: "No se pudo registrar la recaída" }
+        }
+    }
+
     fun deleteHabit(onDone: () -> Unit) {
         val current = habit.value ?: return
         viewModelScope.launch {

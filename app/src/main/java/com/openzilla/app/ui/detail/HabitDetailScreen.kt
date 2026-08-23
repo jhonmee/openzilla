@@ -89,7 +89,12 @@ fun HabitDetailScreen(
     ) { padding ->
         Box(Modifier.padding(padding)) {
             when (tab) {
-                0 -> SummaryTab(current, onResetRequested = { confirmReset = true })
+                0 -> SummaryTab(
+                    habit = current,
+                    history = history,
+                    onResetRequested = { confirmReset = true },
+                    onRelapseAt = viewModel::registerRelapseAt
+                )
                 1 -> MotivationTab(habit = current, reasons = reasons, currencySymbol = currencySymbol, onAddReason = viewModel::addReason, onDeleteReason = viewModel::deleteReason)
                 2 -> StatsTab(habit = current, history = history)
                 3 -> TrophiesTab(current)

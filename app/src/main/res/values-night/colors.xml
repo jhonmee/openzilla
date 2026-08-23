@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Variante oscura del fondo de ventana, para que el arranque en modo oscuro tampoco
+         muestre un destello claro. -->
+    <color name="window_background">#121212</color>
+</resources>

@@ -57,6 +57,7 @@ class AddHabitViewModel(
     fun setCostType(v: HabitCostType) { state = state.copy(costType = v) }
     fun setWeeklyAmount(v: String) { state = state.copy(weeklyAmountText = v) }
     fun setStartedAt(v: Long) { state = state.copy(startedAt = v) }
+    fun setGoalHours(v: Int) { state = state.copy(goalHours = v) }
 
     fun save(onDone: () -> Unit, onError: (String) -> Unit) {
         val trimmedName = state.name.trim()
@@ -87,7 +88,8 @@ class AddHabitViewModel(
                         iconKey = state.iconKey,
                         costType = state.costType,
                         weeklyAmount = if (state.costType == HabitCostType.MONEY || state.costType == HabitCostType.TIME) amount else null,
-                        startedAt = state.startedAt
+                        startedAt = state.startedAt,
+                        goalHours = state.goalHours
                     )
                 ).map { }
             }

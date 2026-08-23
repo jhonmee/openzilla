@@ -21,6 +21,30 @@ object NeutralDark {
     val onSurface = Color(0xFFECECEC)
     val onSurfaceMuted = Color(0xFFA3A3A3)
     val outline = Color(0xFF3A3A3A)
+    val containerLowest = Color(0xFF0E0E0E)
+    val containerLow = Color(0xFF171717)
+    val container = Color(0xFF1E1E1E)
+    val containerHigh = Color(0xFF262626)
+    val containerHighest = Color(0xFF2F2F2F)
+}
+
+/**
+ * True-black palette for OLED screens: pixels that are pure black are simply switched off,
+ * so this saves battery and removes the grey halo around dark UI. Surfaces step up in very
+ * small increments so cards are still distinguishable from the background.
+ */
+object NeutralOled {
+    val background = Color(0xFF000000)
+    val surface = Color(0xFF000000)
+    val surfaceVariant = Color(0xFF161616)
+    val onSurface = Color(0xFFECECEC)
+    val onSurfaceMuted = Color(0xFF9E9E9E)
+    val outline = Color(0xFF2E2E2E)
+    val containerLowest = Color(0xFF000000)
+    val containerLow = Color(0xFF0A0A0A)
+    val container = Color(0xFF101010)
+    val containerHigh = Color(0xFF171717)
+    val containerHighest = Color(0xFF1F1F1F)
 }
 
 /** Small, fixed set of preset accent colors offered in Settings — keeps color choice simple (swatches, not a full picker). */
@@ -42,4 +66,13 @@ object NeutralLight {
     val onSurface = Color(0xFF1B1B1B)
     val onSurfaceMuted = Color(0xFF6B6B6B)
     val outline = Color(0xFFDDDDDD)
+    val containerLowest = Color(0xFFFFFFFF)
+    val containerLow = Color(0xFFF4F4F5)
+    val container = Color(0xFFEFEFF1)
+    val containerHigh = Color(0xFFE9E9EC)
+    val containerHighest = Color(0xFFE3E3E6)
 }
+
+/** Warm core used by the flame on the progress bar — kept fixed so it reads as fire under any accent. */
+val FlameCore = Color(0xFFFFE8A3)
+val FlameMid = Color(0xFFFF9D2E)

@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_background">#E0526B</color>
+    <!-- Fondo de la ventana antes del primer frame de Compose y durante los cambios de
+         actividad. Debe ser neutro: usar aqui el color del icono provocaba un destello
+         rojo al abrir la app y al navegar. -->
+    <color name="window_background">#F7F7F8</color>
 </resources>

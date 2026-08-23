@@ -29,7 +29,12 @@ class MainActivity : ComponentActivity() {
             val app = application as OpenZillaApp
             val settings by app.settingsRepository.settings.collectAsStateWithLifecycle(initialValue = AppSettings())
 
-            OpenZillaTheme(mode = settings.themeMode, seedLight = Color(settings.seedColorLight), seedDark = Color(settings.seedColorDark)) {
+            OpenZillaTheme(
+                mode = settings.themeMode,
+                seedLight = Color(settings.seedColorLight),
+                seedDark = Color(settings.seedColorDark),
+                dynamicColor = settings.dynamicColor
+            ) {
                 OpenZillaRoot(app, settings)
             }
         }

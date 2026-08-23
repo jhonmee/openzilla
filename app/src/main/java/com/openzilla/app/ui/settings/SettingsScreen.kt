@@ -48,6 +48,7 @@ import com.openzilla.app.data.ThemeMode
 import com.openzilla.app.ui.components.ConfirmDialog
 import com.openzilla.app.ui.rememberOpenZillaViewModel
 import com.openzilla.app.ui.theme.PRESET_COLORS
+import com.openzilla.app.ui.theme.dynamicColorAvailable
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -110,15 +111,45 @@ fun SettingsScreen(onBack: () -> Unit) {
                     ThemeModeOption("Sistema", settings.themeMode == ThemeMode.SYSTEM) { viewModel.setThemeMode(ThemeMode.SYSTEM) }
                     ThemeModeOption("Claro", settings.themeMode == ThemeMode.LIGHT) { viewModel.setThemeMode(ThemeMode.LIGHT) }
                     ThemeModeOption("Oscuro", settings.themeMode == ThemeMode.DARK) { viewModel.setThemeMode(ThemeMode.DARK) }
+                    ThemeModeOption("Negro (OLED)", settings.themeMode == ThemeMode.OLED) { viewModel.setThemeMode(ThemeMode.OLED) }
+                }
+            }
+            if (dynamicColorAvailable) {
+                item {
+                    ListItem(
+                        headlineContent = { Text("Usar los colores del sistema") },
+                        supportingContent = { Text("Toma el color de acento del fondo de pantalla (Material You). Mientras esté activo, la elección manual de color queda desactivada.") },
+                        trailingContent = {
+                            Switch(checked = settings.dynamicColor, onCheckedChange = { viewModel.setDynamicColor(it) })
+                        }
+                    )
                 }
             }
             item {
-                Text("Color — modo claro", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 16.dp, top = 12.dp))
-                ColorSwatchRow(selected = Color(settings.seedColorLight), onSelect = { viewModel.setSeedColorLight(it.toArgb()) })
+                Text(
+                    "Color — modo claro",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (settings.dynamicColor) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(start = 16.dp, top = 12.dp)
+                )
+                ColorSwatchRow(
+                    selected = Color(settings.seedColorLight),
+                    enabled = !settings.dynamicColor,
+                    onSelect = { viewModel.setSeedColorLight(it.toArgb()) }
+                )
             }
             item {
-                Text("Color — modo oscuro", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 16.dp, top = 4.dp))
-                ColorSwatchRow(selected = Color(settings.seedColorDark), onSelect = { viewModel.setSeedColorDark(it.toArgb()) })
+                Text(
+                    "Color — modo oscuro",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (settings.dynamicColor) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                )
+                ColorSwatchRow(
+                    selected = Color(settings.seedColorDark),
+                    enabled = !settings.dynamicColor,
+                    onSelect = { viewModel.setSeedColorDark(it.toArgb()) }
+                )
             }
 
             item { SectionTitle("General") }
@@ -271,16 +302,16 @@ private fun ThemeModeOption(label: String, selected: Boolean, onSelect: () -> Un
 }
 
 @Composable
-private fun ColorSwatchRow(selected: Color, onSelect: (Color) -> Unit) {
+private fun ColorSwatchRow(selected: Color, enabled: Boolean, onSelect: (Color) -> Unit) {
     Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         PRESET_COLORS.forEach { color ->
-            val isSelected = color.toArgb() == selected.toArgb()
+            val isSelected = enabled && color.toArgb() == selected.toArgb()
             Box(
                 modifier = Modifier
                     .size(36.dp)
-                    .background(color, CircleShape)
+                    .background(if (enabled) color else color.copy(alpha = 0.28f), CircleShape)
                     .border(2.dp, if (isSelected) MaterialTheme.colorScheme.onSurface else Color.Transparent, CircleShape)
-                    .clickable { onSelect(color) },
+                    .clickable(enabled = enabled) { onSelect(color) },
                 contentAlignment = Alignment.Center
             ) {
                 if (isSelected) Icon(Icons.Filled.Check, contentDescription = "Seleccionado", tint = Color.White)

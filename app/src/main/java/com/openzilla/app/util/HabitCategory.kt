@@ -1,7 +1,7 @@
 package com.openzilla.app.util
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AllInclusive
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Fastfood
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.DinnerDining
@@ -28,7 +28,7 @@ import com.openzilla.app.data.HabitCostType
  * fresh, generic app and not a lookalike of any specific service.
  */
 enum class HabitCategory(val key: String, val label: String, val icon: ImageVector, val suggestedType: HabitCostType) {
-    GENERIC("generic", "Adicción / hábito", Icons.Filled.AllInclusive, HabitCostType.EVENT),
+    GENERIC("generic", "Adicción / hábito", Icons.Filled.Block, HabitCostType.EVENT),
     SMOKING("smoking", "Fumar", Icons.Filled.SmokingRooms, HabitCostType.MONEY),
     ALCOHOL("alcohol", "Alcohol", Icons.Filled.LocalBar, HabitCostType.MONEY),
     DRUGS("drugs", "Drogas", Icons.Filled.Vaccines, HabitCostType.MONEY),
@@ -49,7 +49,7 @@ enum class HabitCategory(val key: String, val label: String, val icon: ImageVect
     companion object {
         fun byKey(key: String): HabitCategory = entries.firstOrNull { it.key == key } ?: GENERIC
         val iconChoices: List<Pair<String, ImageVector>> = listOf(
-            "generic" to Icons.Filled.AllInclusive,
+            "generic" to Icons.Filled.Block,
             "star" to Icons.Filled.Star,
             "smoking" to Icons.Filled.SmokingRooms,
             "alcohol" to Icons.Filled.LocalBar,
@@ -67,6 +67,6 @@ enum class HabitCategory(val key: String, val label: String, val icon: ImageVect
             "sweets" to Icons.Filled.Cake,
             "overeating" to Icons.Filled.DinnerDining
         )
-        fun iconFor(key: String): ImageVector = iconChoices.firstOrNull { it.first == key }?.second ?: Icons.Filled.AllInclusive
+        fun iconFor(key: String): ImageVector = iconChoices.firstOrNull { it.first == key }?.second ?: Icons.Filled.Block
     }
 }

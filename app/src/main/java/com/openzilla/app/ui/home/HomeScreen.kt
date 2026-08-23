@@ -21,7 +21,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -39,9 +38,13 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.openzilla.app.data.HabitEntity
 import com.openzilla.app.ui.components.ConfirmDialog
+import com.openzilla.app.ui.components.ProgressFlameBar
 import com.openzilla.app.ui.rememberOpenZillaViewModel
 import com.openzilla.app.util.HabitCategory
 import com.openzilla.app.util.formatElapsedShort
+import com.openzilla.app.util.currentGoalHours
+import com.openzilla.app.util.goalLabel
+import com.openzilla.app.util.goalPercentText
 import com.openzilla.app.util.goalProgress
 import kotlinx.coroutines.delay
 
@@ -144,10 +147,29 @@ private fun HabitCard(habit: HabitEntity, onClick: () -> Unit, onReset: () -> Un
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 8.dp)
             )
-            LinearProgressIndicator(
-                progress = { goalProgress(habit.startedAt, habit.goalHours, now) },
-                modifier = Modifier.fillMaxWidth().padding(top = 10.dp)
+            // Sin animación en la lista: aquí puede haber muchas tarjetas a la vez y basta
+            // con el dibujo estático.
+            ProgressFlameBar(
+                progress = goalProgress(habit.startedAt, habit.goalHours, now),
+                barHeight = 10.dp,
+                animated = false,
+                modifier = Modifier.padding(top = 4.dp)
             )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    "Meta: ${goalLabel(currentGoalHours(habit.startedAt, habit.goalHours, now))}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    "${goalPercentText(habit.startedAt, habit.goalHours, now)}%",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
         }
     }
 }

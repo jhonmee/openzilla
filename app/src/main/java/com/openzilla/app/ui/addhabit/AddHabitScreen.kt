@@ -4,7 +4,6 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,6 +12,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
@@ -43,14 +44,22 @@ import com.openzilla.app.data.HabitCostType
 import com.openzilla.app.ui.components.ConfirmDialog
 import com.openzilla.app.ui.rememberOpenZillaViewModel
 import com.openzilla.app.util.HabitCategory
+import com.openzilla.app.util.SELECTABLE_GOALS
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
+private enum class WizardStep(val title: String) {
+    NAME_ICON("Nombre e icono"),
+    TYPE("Tipo de hábito"),
+    DATE("Última vez"),
+    GOAL("Tu primera meta")
+}
+
 /**
  * @param editingHabitId null starts the "create new" flow (category picker first);
- *   non-null jumps straight into editing that habit's name/icon/type (no date step —
+ *   non-null jumps straight into editing that habit's name/icon/type/meta (no date step —
  *   changing "when did this last happen" is a separate, explicit "reset" action elsewhere).
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,9 +67,18 @@ import java.util.Locale
 fun AddHabitScreen(editingHabitId: Long?, onDone: () -> Unit, onCancel: () -> Unit) {
     val viewModel = rememberOpenZillaViewModel { AddHabitViewModel(it.repository, editingHabitId) }
     var showCategoryPicker by remember { mutableStateOf(editingHabitId == null) }
-    var step by remember { mutableIntStateOf(1) }
+    var stepIndex by remember { mutableIntStateOf(0) }
     var error by remember { mutableStateOf<String?>(null) }
-    val lastStep = if (viewModel.isEditing) 2 else 3
+
+    val steps = remember(viewModel.isEditing) {
+        if (viewModel.isEditing) {
+            listOf(WizardStep.NAME_ICON, WizardStep.TYPE, WizardStep.GOAL)
+        } else {
+            listOf(WizardStep.NAME_ICON, WizardStep.TYPE, WizardStep.DATE, WizardStep.GOAL)
+        }
+    }
+    val step = steps[stepIndex.coerceIn(0, steps.lastIndex)]
+    val isLastStep = stepIndex >= steps.lastIndex
 
     if (showCategoryPicker) {
         CategoryPickerScreen(
@@ -78,9 +96,9 @@ fun AddHabitScreen(editingHabitId: Long?, onDone: () -> Unit, onCancel: () -> Un
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (viewModel.isEditing) "Editar hábito" else "Nombre e icono") },
+                title = { Text(if (viewModel.isEditing && step == WizardStep.NAME_ICON) "Editar hábito" else step.title) },
                 navigationIcon = {
-                    IconButton(onClick = { if (step > 1) step-- else onCancel() }) {
+                    IconButton(onClick = { if (stepIndex > 0) stepIndex-- else onCancel() }) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Atrás")
                     }
                 }
@@ -89,25 +107,32 @@ fun AddHabitScreen(editingHabitId: Long?, onDone: () -> Unit, onCancel: () -> Un
         bottomBar = {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(16.dp),
-                horizontalArrangement = Arrangement.End
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
+                Text(
+                    "Paso ${stepIndex + 1} de ${steps.size}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Button(onClick = {
-                    if (step < lastStep) {
-                        step++
+                    if (!isLastStep) {
+                        stepIndex++
                     } else {
                         viewModel.save(onDone = onDone, onError = { error = it })
                     }
                 }) {
-                    Text(if (step < lastStep) "Siguiente" else if (viewModel.isEditing) "Guardar" else "Finalizar")
+                    Text(if (!isLastStep) "Siguiente" else if (viewModel.isEditing) "Guardar" else "Finalizar")
                 }
             }
         }
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
             when (step) {
-                1 -> NameIconStep(viewModel)
-                2 -> TypeStep(viewModel)
-                3 -> DateStep(viewModel)
+                WizardStep.NAME_ICON -> NameIconStep(viewModel)
+                WizardStep.TYPE -> TypeStep(viewModel)
+                WizardStep.DATE -> DateStep(viewModel)
+                WizardStep.GOAL -> GoalStep(viewModel)
             }
         }
     }
@@ -250,6 +275,44 @@ private fun DateStep(viewModel: AddHabitViewModel) {
             }.show()
         }) {
             Text(formatter.format(Date(viewModel.state.startedAt)))
+        }
+        Text(
+            "El contador arranca desde este momento.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 12.dp)
+        )
+    }
+}
+
+@Composable
+private fun GoalStep(viewModel: AddHabitViewModel) {
+    Column(modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
+        Text("¿Cuál es tu primera meta?", style = MaterialTheme.typography.titleMedium)
+        Text(
+            "Cuando la alcances, OpenZilla pasará sola a la siguiente meta de la escala (1 día, 3 días, 1 semana, 2 semanas, 1 mes…), así que el contador nunca vuelve a cero por haberlo conseguido.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 4.dp, bottom = 12.dp)
+        )
+        SELECTABLE_GOALS.forEach { goal ->
+            val selected = viewModel.state.goalHours == goal.hours
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                onClick = { viewModel.setGoalHours(goal.hours) },
+                colors = CardDefaults.cardColors(
+                    containerColor = if (selected) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface
+                )
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(goal.label, style = MaterialTheme.typography.titleMedium)
+                    RadioButton(selected = selected, onClick = { viewModel.setGoalHours(goal.hours) })
+                }
+            }
         }
     }
 }

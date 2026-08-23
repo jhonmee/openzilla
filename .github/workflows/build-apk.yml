@@ -3,6 +3,9 @@ name: Build APK
 on:
   push:
     branches: [ main ]
+  # Asi cualquier rama abierta como pull request tambien se compila antes de fusionarla.
+  pull_request:
+    branches: [ main ]
   workflow_dispatch: {}
 
 jobs:
@@ -24,6 +27,9 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
+
+      - name: Run unit tests
+        run: gradle testDebugUnitTest --no-daemon
 
       - name: Build debug APK
         run: gradle assembleDebug --no-daemon
