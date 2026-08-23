@@ -1,6 +1,5 @@
 package com.openzilla.app.ui.home
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,8 +30,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -43,6 +42,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.openzilla.app.data.HabitEntity
 import com.openzilla.app.ui.components.ConfirmDialog
 import com.openzilla.app.ui.components.ProgressWaveBar
+import com.openzilla.app.ui.components.rememberNowTicker
 import com.openzilla.app.ui.components.rememberReorderState
 import com.openzilla.app.ui.components.reorderableItem
 import com.openzilla.app.ui.rememberHaptics
@@ -53,9 +53,8 @@ import com.openzilla.app.util.formatElapsedShort
 import com.openzilla.app.util.goalLabel
 import com.openzilla.app.util.goalPercentText
 import com.openzilla.app.util.goalProgress
-import kotlinx.coroutines.delay
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onAddHabit: () -> Unit,
@@ -70,6 +69,11 @@ fun HomeScreen(
     val haptics = rememberHaptics()
     val listState = rememberLazyListState()
 
+    // Un solo reloj para toda la lista, en vez de una corrutina por tarjeta. Se guarda el
+    // State sin leerlo aquí: quien lo lee es cada tarjeta, así el tic de cada segundo
+    // recompone las tarjetas y no toda la pantalla.
+    val nowState = rememberNowTicker()
+
     // Copia local sobre la que se reordena en vivo. Mientras se arrastra no se pisa con lo
     // que llega de la base de datos; al soltar se guarda y la base de datos vuelve a mandar.
     var ordered by remember { mutableStateOf(habits) }
@@ -77,9 +81,9 @@ fun HomeScreen(
     val reorderState = rememberReorderState(
         listState = listState,
         onMove = { from, to ->
-            ordered = ordered.toMutableList().apply { add(to, removeAt(from)) }
+            ordered = ordered?.toMutableList()?.apply { add(to, removeAt(from)) }
         },
-        onDropped = { viewModel.saveOrder(ordered.map { it.id }) { message -> error = message } },
+        onDropped = { viewModel.saveOrder(ordered.orEmpty().map { it.id }) { message -> error = message } },
         onLifted = { haptics.longPress() },
         onSwapped = { haptics.tick() }
     )
@@ -107,27 +111,33 @@ fun HomeScreen(
             }
         }
     ) { padding ->
-        if (ordered.isEmpty()) {
-            Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+        val current = ordered
+        when {
+            // Todavía no ha llegado nada: se deja el fondo limpio. Dura un par de frames y es
+            // preferible a enseñar el mensaje de "no hay hábitos" a quien sí los tiene.
+            current == null -> Box(Modifier.fillMaxSize().padding(padding))
+
+            current.isEmpty() -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                 Text("Toca + para registrar el primer hábito que quieres dejar", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-        } else {
-            LazyColumn(
+
+            else -> LazyColumn(
                 state = listState,
                 modifier = Modifier.fillMaxSize().padding(padding),
                 contentPadding = PaddingValues(16.dp)
             ) {
-                itemsIndexed(ordered, key = { _, habit -> habit.id }) { index, habit ->
+                itemsIndexed(current, key = { _, habit -> habit.id }) { index, habit ->
                     val isDragged = reorderState.draggingKey == habit.id
                     Box(
                         modifier = Modifier
                             // La tarjeta agarrada la coloca el dedo; las demás sí animan su
                             // hueco al apartarse, que es lo que hace legible el movimiento.
-                            .then(if (isDragged) Modifier else Modifier.animateItemPlacement())
+                            .then(if (isDragged) Modifier else Modifier.animateItem())
                             .reorderableItem(reorderState, habit.id, index)
                     ) {
                         HabitCard(
                             habit = habit,
+                            nowState = nowState,
                             lifted = isDragged,
                             onClick = {
                                 // Al soltar tras arrastrar llega también un "toque"; se ignora
@@ -173,18 +183,13 @@ fun HomeScreen(
 @Composable
 private fun HabitCard(
     habit: HabitEntity,
+    nowState: State<Long>,
     lifted: Boolean,
     onClick: () -> Unit,
     onReset: () -> Unit,
     onDelete: () -> Unit
 ) {
-    var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
-    LaunchedEffect(habit.id) {
-        while (true) {
-            now = System.currentTimeMillis()
-            delay(30_000) // list view doesn't need per-second precision — saves battery/CPU
-        }
-    }
+    val now = nowState.value
     var menuOpen by remember { mutableStateOf(false) }
     val category = HabitCategory.iconFor(habit.iconKey)
 

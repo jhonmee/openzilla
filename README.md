@@ -32,6 +32,10 @@ secreto del repositorio y cambiar `assembleDebug` por `assembleRelease` en el fl
   coste (dinero / tiempo / evento).
 - Ordena la lista a tu gusto: mantén pulsado un hábito, se levanta y lo arrastras donde
   quieras (la lista se desplaza sola al llegar a los bordes).
+- Navegación con los gestos de Android: las pantallas entran y salen deslizándose, y en
+  Android 13 o superior puedes mantener el gesto de volver para ir viendo a dónde regresas y
+  soltarlo a medias si cambias de idea. En versiones anteriores el botón de atrás funciona
+  como siempre.
 - Contador de tiempo sin recaídas en tiempo real, con una barra de progreso hacia la meta
   en curso, recorrida por una onda suave.
 - Escala de metas: eliges la primera al crear el hábito (6 h, 12 h, 1 día, 3 días, 1 semana…)

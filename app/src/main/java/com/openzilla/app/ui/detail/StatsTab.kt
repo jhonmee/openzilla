@@ -18,16 +18,13 @@ import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,8 +34,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.openzilla.app.data.HabitEntity
 import com.openzilla.app.data.HistoryEntity
+import com.openzilla.app.ui.components.rememberNowTicker
 import com.openzilla.app.util.formatDurationShort
-import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -50,15 +47,9 @@ private data class Bar(val label: String, val millis: Long, val isCurrent: Boole
 
 @Composable
 fun StatsTab(habit: HabitEntity, history: List<HistoryEntity>) {
-    // La racha en curso se refresca cada medio minuto: suficiente para que las cifras no se
-    // queden congeladas y muy por debajo de lo que costaría un contador por segundo.
-    var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
-    LaunchedEffect(habit.id) {
-        while (true) {
-            now = System.currentTimeMillis()
-            delay(30_000)
-        }
-    }
+    // Aquí las cifras se muestran en días y horas, así que medio minuto sobra; el reloj
+    // compartido se encarga además de refrescar al volver de segundo plano.
+    val now by rememberNowTicker(intervalMillis = 30_000L)
 
     val currentStreak = (now - habit.startedAt).coerceAtLeast(0)
     val pastStreaks = history.map { (it.streakEnd - it.streakStart).coerceAtLeast(0) }
@@ -129,7 +120,7 @@ fun StatsTab(habit: HabitEntity, history: List<HistoryEntity>) {
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    Divider()
+                    HorizontalDivider()
                 }
             }
         }
@@ -194,7 +185,7 @@ private fun StreakBarChart(bars: List<Bar>) {
                 }
             }
         }
-        Divider(color = MaterialTheme.colorScheme.outline)
+        HorizontalDivider(color = MaterialTheme.colorScheme.outline)
         Row(
             modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(6.dp)

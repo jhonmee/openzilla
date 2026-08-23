@@ -15,8 +15,10 @@ import kotlinx.coroutines.launch
 
 class HabitDetailViewModel(private val repository: HabitRepository, private val habitId: Long) : ViewModel() {
 
+    // Arranca con lo que ya se sabe del hábito (viniendo de la lista, siempre hay algo), así
+    // la pantalla se dibuja completa desde el primer frame.
     val habit: StateFlow<HabitEntity?> = repository.observeHabit(habitId)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), repository.cachedHabit(habitId))
 
     val reasons: StateFlow<List<ReasonEntity>> = repository.observeReasons(habitId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())

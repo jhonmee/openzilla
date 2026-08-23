@@ -11,8 +11,13 @@ import kotlinx.coroutines.launch
 
 class HomeViewModel(private val repository: HabitRepository) : ViewModel() {
 
-    val habits: StateFlow<List<HabitEntity>> = repository.observeHabits()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    /**
+     * null significa "todavía no ha llegado nada de la base de datos", que no es lo mismo que
+     * una lista vacía. Sin esa distinción, al abrir la app se veía durante un frame el mensaje
+     * de "no tienes hábitos" antes de aparecer los que sí hay.
+     */
+    val habits: StateFlow<List<HabitEntity>?> = repository.observeHabits()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     fun deleteHabit(habit: HabitEntity, onError: (String) -> Unit) {
         viewModelScope.launch {

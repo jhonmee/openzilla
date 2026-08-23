@@ -3,6 +3,8 @@ package com.openzilla.app.data
 import android.content.Context
 import androidx.room.withTransaction
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.onEach
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Single entry point to all persisted data. Every write is wrapped in a [Result] so a
@@ -15,8 +17,22 @@ class HabitRepository(context: Context) {
     private val reasonDao = db.reasonDao()
     private val historyDao = db.historyDao()
 
+    /**
+     * Last value seen for each habit. Reading a row from Room takes a few milliseconds, but
+     * those milliseconds are a visible blank frame when opening a habit straight from the
+     * list. Since the list was already observing the data, the detail screen can start from
+     * what is known instead of from nothing.
+     */
+    private val habitCache = ConcurrentHashMap<Long, HabitEntity>()
+
     fun observeHabits(): Flow<List<HabitEntity>> = habitDao.observeAll()
+        .onEach { habits -> habits.forEach { habitCache[it.id] = it } }
+
     fun observeHabit(id: Long): Flow<HabitEntity?> = habitDao.observeById(id)
+        .onEach { habit -> habit?.let { habitCache[it.id] = it } }
+
+    /** Whatever is already known about a habit, or null if it has never been observed. */
+    fun cachedHabit(id: Long): HabitEntity? = habitCache[id]
     fun observeReasons(habitId: Long): Flow<List<ReasonEntity>> = reasonDao.observeForHabit(habitId)
     fun observeHistory(habitId: Long): Flow<List<HistoryEntity>> = historyDao.observeForHabit(habitId)
 

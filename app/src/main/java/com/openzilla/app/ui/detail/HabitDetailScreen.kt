@@ -22,6 +22,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -30,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.delay
 import com.openzilla.app.ui.components.ConfirmDialog
 import com.openzilla.app.ui.rememberOpenZillaViewModel
 import com.openzilla.app.ui.rememberHaptics
@@ -57,9 +59,17 @@ fun HabitDetailScreen(
 
     val current = habit
     if (current == null) {
+        // Con la caché del repositorio esto casi nunca llega a verse viniendo de la lista. Si
+        // aun así la lectura tardara, el indicador espera un cuarto de segundo antes de
+        // aparecer: una carga instantánea no debe producir un parpadeo de "cargando".
+        var showSpinner by remember { mutableStateOf(false) }
+        LaunchedEffect(Unit) {
+            delay(250)
+            showSpinner = true
+        }
         Scaffold(topBar = { TopAppBar(title = { Text("") }, navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, contentDescription = "Atrás") } }) }) { padding ->
             Box(Modifier.padding(padding).fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+                if (showSpinner) CircularProgressIndicator()
             }
         }
         return

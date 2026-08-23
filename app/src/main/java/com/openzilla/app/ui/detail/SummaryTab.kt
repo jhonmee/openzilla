@@ -7,14 +7,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -28,6 +27,7 @@ import com.openzilla.app.ui.components.CalendarGrid
 import com.openzilla.app.ui.components.ConfirmDialog
 import com.openzilla.app.ui.rememberHaptics
 import com.openzilla.app.ui.components.ProgressWaveBar
+import com.openzilla.app.ui.components.rememberNowTicker
 import com.openzilla.app.util.buildHabitDayMap
 import com.openzilla.app.util.currentGoalHours
 import com.openzilla.app.util.dayStartOf
@@ -38,7 +38,6 @@ import com.openzilla.app.util.goalPercentText
 import com.openzilla.app.util.goalProgress
 import com.openzilla.app.util.goalRemainingMillis
 import com.openzilla.app.util.middayOf
-import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -51,32 +50,29 @@ fun SummaryTab(
     onResetRequested: () -> Unit,
     onRelapseAt: (Long) -> Unit
 ) {
-    var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
-    // Ticks every second only while this tab is actually on screen — LaunchedEffect is
-    // cancelled automatically when the composable leaves composition, so there is nothing
-    // left running (and nothing to leak) once the user navigates away.
-    LaunchedEffect(habit.id) {
-        while (true) {
-            now = System.currentTimeMillis()
-            delay(1_000)
-        }
-    }
+    // Reloj compartido: se para al irse la app a segundo plano y publica la hora nueva nada
+    // más volver, así el contador nunca se queda con un valor viejo en pantalla. Se lee dentro
+    // del item, no aquí, para que el tic no recomponga también el calendario.
+    val nowState = rememberNowTicker()
     val haptics = rememberHaptics()
     var monthAnchor by remember { mutableStateOf(Calendar.getInstance()) }
     var pendingRelapseDay by remember { mutableStateOf<Long?>(null) }
-    val parts = elapsedParts(habit.startedAt, now)
 
-    // El mapa de días depende de los datos guardados y del día en curso, no del reloj: no se
-    // recalcula con cada tic del contador, sólo al cambiar el hábito, su historial o la fecha
-    // (para que el calendario se ponga al día si la app se queda abierta pasada medianoche).
-    val todayStart = dayStartOf(now)
+
+    // El mapa de días depende de los datos guardados y del día en curso, no del reloj. El
+    // derivedStateOf es la pieza clave: mira el reloj cada segundo, pero sólo avisa cuando
+    // cambia el día, así que el calendario se pone al día si la app se queda abierta pasada
+    // medianoche sin recomponerse en cada tic.
+    val todayStart by remember { derivedStateOf { dayStartOf(nowState.value) } }
     val dayMap = remember(habit.id, habit.startedAt, history, todayStart) {
-        buildHabitDayMap(habit.startedAt, history.map { it.streakStart to it.streakEnd }, now)
+        buildHabitDayMap(habit.startedAt, history.map { it.streakStart to it.streakEnd }, todayStart)
     }
     val dateFormat = remember { SimpleDateFormat("d 'de' MMMM 'de' yyyy", Locale("es")) }
 
     LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         item {
+            val now = nowState.value
+            val parts = elapsedParts(habit.startedAt, now)
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                 Text("Tiempo sin recaídas", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(
@@ -121,7 +117,7 @@ fun SummaryTab(
             }
         }
         item {
-            Divider(modifier = Modifier.padding(vertical = 16.dp))
+            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
             CalendarGrid(
                 monthAnchor = monthAnchor,
                 coveredRanges = dayMap.coveredRanges,

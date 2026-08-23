@@ -1,8 +1,12 @@
 package com.openzilla.app.ui.navigation
 
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -23,20 +27,38 @@ private object Routes {
     fun detail(habitId: Long) = "detail/$habitId"
 }
 
+/**
+ * Corta a propósito: lo justo para que se lea de dónde viene y a dónde va la pantalla, sin
+ * que se note espera. Es también el tiempo que dura la animación de vuelta cuando el gesto
+ * de retroceso predictivo se suelta.
+ */
+private const val NAV_DURATION_MILLIS = 250
+
+private fun AnimatedContentTransitionScope<NavBackStackEntry>.slideIn(
+    towards: AnimatedContentTransitionScope.SlideDirection
+) = slideIntoContainer(towards, tween(NAV_DURATION_MILLIS, easing = FastOutSlowInEasing)) +
+    fadeIn(tween(NAV_DURATION_MILLIS))
+
+private fun AnimatedContentTransitionScope<NavBackStackEntry>.slideOut(
+    towards: AnimatedContentTransitionScope.SlideDirection
+) = slideOutOfContainer(towards, tween(NAV_DURATION_MILLIS, easing = FastOutSlowInEasing)) +
+    fadeOut(tween(NAV_DURATION_MILLIS))
+
 @Composable
 fun OpenZillaNavHost(settings: AppSettings) {
     val navController = rememberNavController()
 
-    // Cambios de pantalla instantáneos: sin fundidos ni desplazamientos. Además de ser lo
-    // que se pidió, es la opción más barata posible — no hay ninguna animación que componer
-    // ni ninguna capa extra que dibujar durante la navegación.
+    // Avanzar desplaza hacia la izquierda y volver hacia la derecha, que es el movimiento que
+    // el sistema espera. Al mantener el gesto de retroceso, Android va aplicando por su cuenta
+    // el progreso del gesto a estas mismas transiciones: por eso se puede ir viendo la
+    // pantalla anterior y cancelar el gesto a medias sin llegar a salir.
     NavHost(
         navController = navController,
         startDestination = Routes.HOME,
-        enterTransition = { EnterTransition.None },
-        exitTransition = { ExitTransition.None },
-        popEnterTransition = { EnterTransition.None },
-        popExitTransition = { ExitTransition.None }
+        enterTransition = { slideIn(AnimatedContentTransitionScope.SlideDirection.Start) },
+        exitTransition = { slideOut(AnimatedContentTransitionScope.SlideDirection.Start) },
+        popEnterTransition = { slideIn(AnimatedContentTransitionScope.SlideDirection.End) },
+        popExitTransition = { slideOut(AnimatedContentTransitionScope.SlideDirection.End) }
     ) {
         composable(Routes.HOME) {
             HomeScreen(

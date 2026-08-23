@@ -9,6 +9,12 @@
     -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!--
+        enableOnBackInvokedCallback activa el gesto de retroceso predictivo de Android (poder
+        mantener el gesto y ver a dónde vuelves). Los sistemas anteriores a Android 13 ignoran
+        el atributo por completo y siguen usando el botón/gesto de atrás de siempre, así que
+        no cambia nada para ellos.
+    -->
     <application
         android:name=".OpenZillaApp"
         android:allowBackup="false"
@@ -18,6 +24,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.OpenZilla"
         android:hardwareAccelerated="true"
+        android:enableOnBackInvokedCallback="true"
         android:enableOnBackInvokedCallback="true"
         tools:targetApi="34"
         xmlns:tools="http://schemas.android.com/tools">
