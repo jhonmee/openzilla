@@ -25,7 +25,6 @@
         android:theme="@style/Theme.OpenZilla"
         android:hardwareAccelerated="true"
         android:enableOnBackInvokedCallback="true"
-        android:enableOnBackInvokedCallback="true"
         tools:targetApi="34"
         xmlns:tools="http://schemas.android.com/tools">
 
