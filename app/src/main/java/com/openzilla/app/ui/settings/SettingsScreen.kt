@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.openzilla.app.data.ThemeMode
 import com.openzilla.app.ui.components.ConfirmDialog
+import com.openzilla.app.ui.rememberHaptics
 import com.openzilla.app.ui.rememberOpenZillaViewModel
 import com.openzilla.app.ui.theme.PRESET_COLORS
 import com.openzilla.app.ui.theme.dynamicColorAvailable
@@ -58,6 +59,7 @@ fun SettingsScreen(onBack: () -> Unit) {
     }
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     val message by viewModel.message.collectAsStateWithLifecycle()
+    val haptics = rememberHaptics()
 
     var showPinDialog by remember { mutableStateOf(false) }
     var showRemovePinConfirm by remember { mutableStateOf(false) }
@@ -108,10 +110,10 @@ fun SettingsScreen(onBack: () -> Unit) {
             item { SectionTitle("Apariencia") }
             item {
                 Column(Modifier.padding(horizontal = 16.dp)) {
-                    ThemeModeOption("Sistema", settings.themeMode == ThemeMode.SYSTEM) { viewModel.setThemeMode(ThemeMode.SYSTEM) }
-                    ThemeModeOption("Claro", settings.themeMode == ThemeMode.LIGHT) { viewModel.setThemeMode(ThemeMode.LIGHT) }
-                    ThemeModeOption("Oscuro", settings.themeMode == ThemeMode.DARK) { viewModel.setThemeMode(ThemeMode.DARK) }
-                    ThemeModeOption("Negro (OLED)", settings.themeMode == ThemeMode.OLED) { viewModel.setThemeMode(ThemeMode.OLED) }
+                    ThemeModeOption("Sistema", settings.themeMode == ThemeMode.SYSTEM) { haptics.tap(); viewModel.setThemeMode(ThemeMode.SYSTEM) }
+                    ThemeModeOption("Claro", settings.themeMode == ThemeMode.LIGHT) { haptics.tap(); viewModel.setThemeMode(ThemeMode.LIGHT) }
+                    ThemeModeOption("Oscuro", settings.themeMode == ThemeMode.DARK) { haptics.tap(); viewModel.setThemeMode(ThemeMode.DARK) }
+                    ThemeModeOption("Negro (OLED)", settings.themeMode == ThemeMode.OLED) { haptics.tap(); viewModel.setThemeMode(ThemeMode.OLED) }
                 }
             }
             if (dynamicColorAvailable) {
@@ -120,7 +122,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                         headlineContent = { Text("Usar los colores del sistema") },
                         supportingContent = { Text("Toma el color de acento del fondo de pantalla (Material You). Mientras esté activo, la elección manual de color queda desactivada.") },
                         trailingContent = {
-                            Switch(checked = settings.dynamicColor, onCheckedChange = { viewModel.setDynamicColor(it) })
+                            Switch(checked = settings.dynamicColor, onCheckedChange = { haptics.tap(); viewModel.setDynamicColor(it) })
                         }
                     )
                 }
@@ -135,7 +137,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                 ColorSwatchRow(
                     selected = Color(settings.seedColorLight),
                     enabled = !settings.dynamicColor,
-                    onSelect = { viewModel.setSeedColorLight(it.toArgb()) }
+                    onSelect = { haptics.tap(); viewModel.setSeedColorLight(it.toArgb()) }
                 )
             }
             item {
@@ -148,11 +150,28 @@ fun SettingsScreen(onBack: () -> Unit) {
                 ColorSwatchRow(
                     selected = Color(settings.seedColorDark),
                     enabled = !settings.dynamicColor,
-                    onSelect = { viewModel.setSeedColorDark(it.toArgb()) }
+                    onSelect = { haptics.tap(); viewModel.setSeedColorDark(it.toArgb()) }
                 )
             }
 
             item { SectionTitle("General") }
+            item {
+                ListItem(
+                    headlineContent = { Text("Vibración al tocar") },
+                    supportingContent = { Text("Respuesta táctil breve en botones y acciones. Respeta siempre el ajuste de vibración del sistema.") },
+                    trailingContent = {
+                        Switch(
+                            checked = settings.hapticsEnabled,
+                            onCheckedChange = { enabled ->
+                                // Se vibra antes de guardar para que al activarlo se note en el
+                                // acto cómo es la respuesta que se acaba de encender.
+                                if (enabled) haptics.tapAlways()
+                                viewModel.setHapticsEnabled(enabled)
+                            }
+                        )
+                    }
+                )
+            }
             item {
                 ListItem(
                     headlineContent = { Text("Moneda") },
@@ -185,6 +204,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                     supportingContent = { Text("Recibe un aviso al alcanzar cada logro") },
                     trailingContent = {
                         Switch(checked = settings.notifyProgress, onCheckedChange = { enabled ->
+                            haptics.tap()
                             if (enabled) enableNotification { viewModel.setNotifyProgress(true) } else viewModel.setNotifyProgress(false)
                         })
                     }
@@ -196,6 +216,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                     supportingContent = { Text("Recibe la frase del día") },
                     trailingContent = {
                         Switch(checked = settings.notifyDailyQuote, onCheckedChange = { enabled ->
+                            haptics.tap()
                             if (enabled) enableNotification { viewModel.setNotifyDailyQuote(true) } else viewModel.setNotifyDailyQuote(false)
                         })
                     }

@@ -1,18 +1,30 @@
-name: Build APK
+name: Build & Release
 
 on:
   push:
     branches: [ main ]
-  # Asi cualquier rama abierta como pull request tambien se compila antes de fusionarla.
+  # Cualquier rama abierta como pull request se compila y pasa los tests, pero no publica nada.
   pull_request:
     branches: [ main ]
   workflow_dispatch: {}
+
+# Necesario para crear la etiqueta y la release con el APK adjunto.
+permissions:
+  contents: write
+
+# Dos cambios seguidos en main no deben publicar a la vez: la segunda espera a la primera
+# para que el número de versión que calcula ya tenga en cuenta la etiqueta anterior.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # historial completo: la versión se deduce de las etiquetas
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -28,14 +40,73 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Run unit tests
+      - name: Calcular la siguiente versión
+        id: version
+        run: |
+          set -euo pipefail
+          git fetch --tags --force
+          last=$(git tag -l 'v*' | sort -V | tail -n 1 || true)
+          if [ -z "$last" ]; then
+            major=1; minor=0; patch=0
+          else
+            v=${last#v}
+            major=$(echo "$v" | cut -d. -f1)
+            minor=$(echo "$v" | cut -d. -f2)
+            patch=$(echo "$v" | cut -d. -f3)
+          fi
+          patch=$((patch + 1))
+          name="$major.$minor.$patch"
+          # versionCode tiene que crecer siempre para que Android acepte la actualización.
+          # Con estos anchos (999 parches por versión menor) dos versiones distintas no
+          # pueden generar nunca el mismo número.
+          code=$((major * 1000000 + minor * 1000 + patch))
+          {
+            echo "name=$name"
+            echo "code=$code"
+            echo "tag=v$name"
+          } >> "$GITHUB_OUTPUT"
+          echo "Última etiqueta: ${last:-(ninguna)} -> nueva versión $name (versionCode $code)"
+
+      - name: Ejecutar tests
         run: gradle testDebugUnitTest --no-daemon
 
-      - name: Build debug APK
-        run: gradle assembleDebug --no-daemon
+      - name: Compilar APK
+        run: >
+          gradle assembleDebug --no-daemon
+          -PappVersionName=${{ steps.version.outputs.name }}
+          -PappVersionCode=${{ steps.version.outputs.code }}
 
-      - name: Upload APK
+      - name: Preparar los archivos
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          # Nombre fijo: es el que hace que el enlace de descarga del README no cambie nunca.
+          cp app/build/outputs/apk/debug/*.apk "dist/openzilla.apk"
+          cp "dist/openzilla.apk" "dist/openzilla-${{ steps.version.outputs.name }}.apk"
+
+      - name: Guardar el APK como artefacto
         uses: actions/upload-artifact@v4
         with:
-          name: openzilla-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
+          name: openzilla-apk
+          path: dist/*.apk
+
+      - name: Publicar la release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          cat > notes.md <<'EOF'
+          APK listo para instalar. Descarga directa, siempre la última versión:
+          https://github.com/jhonmee/openzilla/releases/latest/download/openzilla.apk
+
+          Para instalarlo, el móvil pedirá permiso para instalar apps de origen desconocido.
+          Está firmado con la clave de depuración de Android, así que si vienes de una versión
+          instalada desde otra fuente tendrás que desinstalarla antes.
+          EOF
+          gh release create "${{ steps.version.outputs.tag }}" \
+            "dist/openzilla.apk" \
+            "dist/openzilla-${{ steps.version.outputs.name }}.apk" \
+            --title "OpenZilla ${{ steps.version.outputs.name }}" \
+            --notes-file notes.md \
+            --generate-notes

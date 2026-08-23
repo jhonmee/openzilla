@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -12,6 +13,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.openzilla.app.data.AppSettings
+import com.openzilla.app.ui.LocalHapticsEnabled
 import com.openzilla.app.ui.navigation.OpenZillaNavHost
 import com.openzilla.app.ui.settings.PinLockScreen
 import com.openzilla.app.ui.theme.OpenZillaTheme
@@ -35,7 +37,9 @@ class MainActivity : ComponentActivity() {
                 seedDark = Color(settings.seedColorDark),
                 dynamicColor = settings.dynamicColor
             ) {
-                OpenZillaRoot(app, settings)
+                CompositionLocalProvider(LocalHapticsEnabled provides settings.hapticsEnabled) {
+                    OpenZillaRoot(app, settings)
+                }
             }
         }
     }

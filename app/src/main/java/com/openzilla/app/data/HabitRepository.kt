@@ -20,7 +20,21 @@ class HabitRepository(context: Context) {
     fun observeReasons(habitId: Long): Flow<List<ReasonEntity>> = reasonDao.observeForHabit(habitId)
     fun observeHistory(habitId: Long): Flow<List<HistoryEntity>> = historyDao.observeForHabit(habitId)
 
-    suspend fun addHabit(habit: HabitEntity): Result<Long> = runCatching { habitDao.insert(habit) }
+    /** New habits go to the end of the list; the user can drag them anywhere afterwards. */
+    suspend fun addHabit(habit: HabitEntity): Result<Long> = runCatching {
+        habitDao.insert(habit.copy(sortOrder = habitDao.maxSortOrder() + 1))
+    }
+
+    /**
+     * Persists a new manual order. [orderedIds] is the full list as the user left it on
+     * screen; positions are rewritten from scratch inside one transaction, so the list can
+     * never end up half-reordered if something fails midway.
+     */
+    suspend fun saveHabitOrder(orderedIds: List<Long>): Result<Unit> = runCatching {
+        db.withTransaction {
+            orderedIds.forEachIndexed { index, id -> habitDao.updateSortOrder(id, index) }
+        }
+    }
 
     suspend fun updateHabit(habit: HabitEntity): Result<Unit> = runCatching { habitDao.update(habit) }
 

@@ -9,7 +9,9 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface HabitDao {
-    @Query("SELECT * FROM habits ORDER BY createdAt ASC")
+    // createdAt desempata para que el orden sea estable entre hábitos que compartan sortOrder
+    // (por ejemplo los que existían antes de que se pudiera reordenar).
+    @Query("SELECT * FROM habits ORDER BY sortOrder ASC, createdAt ASC")
     fun observeAll(): Flow<List<HabitEntity>>
 
     @Query("SELECT * FROM habits WHERE id = :id")
@@ -33,8 +35,14 @@ interface HabitDao {
     @Query("SELECT COUNT(*) FROM habits")
     suspend fun count(): Int
 
-    @Query("SELECT * FROM habits ORDER BY createdAt ASC")
+    @Query("SELECT * FROM habits ORDER BY sortOrder ASC, createdAt ASC")
     suspend fun getAllOnce(): List<HabitEntity>
+
+    @Query("SELECT COALESCE(MAX(sortOrder), -1) FROM habits")
+    suspend fun maxSortOrder(): Int
+
+    @Query("UPDATE habits SET sortOrder = :order WHERE id = :id")
+    suspend fun updateSortOrder(id: Long, order: Int)
 }
 
 @Dao

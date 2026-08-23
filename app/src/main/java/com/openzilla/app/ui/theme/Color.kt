@@ -72,7 +72,3 @@ object NeutralLight {
     val containerHigh = Color(0xFFE9E9EC)
     val containerHighest = Color(0xFFE3E3E6)
 }
-
-/** Warm core used by the flame on the progress bar — kept fixed so it reads as fire under any accent. */
-val FlameCore = Color(0xFFFFE8A3)
-val FlameMid = Color(0xFFFF9D2E)

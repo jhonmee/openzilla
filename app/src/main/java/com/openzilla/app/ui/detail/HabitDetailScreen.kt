@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.openzilla.app.ui.components.ConfirmDialog
 import com.openzilla.app.ui.rememberOpenZillaViewModel
+import com.openzilla.app.ui.rememberHaptics
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,6 +49,7 @@ fun HabitDetailScreen(
     val history by viewModel.history.collectAsStateWithLifecycle()
     val error by viewModel.errors.collectAsStateWithLifecycle()
 
+    val haptics = rememberHaptics()
     var tab by remember { mutableIntStateOf(0) }
     var menuOpen by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf(false) }
@@ -80,10 +82,10 @@ fun HabitDetailScreen(
         },
         bottomBar = {
             NavigationBar {
-                NavigationBarItem(selected = tab == 0, onClick = { tab = 0 }, icon = { Icon(Icons.Filled.CalendarMonth, contentDescription = null) }, label = { Text("Resumen") })
-                NavigationBarItem(selected = tab == 1, onClick = { tab = 1 }, icon = { Icon(Icons.Filled.Lightbulb, contentDescription = null) }, label = { Text("Motivación") })
-                NavigationBarItem(selected = tab == 2, onClick = { tab = 2 }, icon = { Icon(Icons.Filled.ShowChart, contentDescription = null) }, label = { Text("Progreso") })
-                NavigationBarItem(selected = tab == 3, onClick = { tab = 3 }, icon = { Icon(Icons.Filled.EmojiEvents, contentDescription = null) }, label = { Text("Trofeos") })
+                NavigationBarItem(selected = tab == 0, onClick = { haptics.tap(); tab = 0 }, icon = { Icon(Icons.Filled.CalendarMonth, contentDescription = null) }, label = { Text("Resumen") })
+                NavigationBarItem(selected = tab == 1, onClick = { haptics.tap(); tab = 1 }, icon = { Icon(Icons.Filled.Lightbulb, contentDescription = null) }, label = { Text("Motivación") })
+                NavigationBarItem(selected = tab == 2, onClick = { haptics.tap(); tab = 2 }, icon = { Icon(Icons.Filled.ShowChart, contentDescription = null) }, label = { Text("Progreso") })
+                NavigationBarItem(selected = tab == 3, onClick = { haptics.tap(); tab = 3 }, icon = { Icon(Icons.Filled.EmojiEvents, contentDescription = null) }, label = { Text("Trofeos") })
             }
         }
     ) { padding ->
@@ -107,7 +109,7 @@ fun HabitDetailScreen(
             title = "Reiniciar contador",
             message = "Se guardará tu racha actual en el historial y el contador volverá a empezar desde ahora. Esto no borra tus datos anteriores.",
             confirmLabel = "Reiniciar",
-            onConfirm = { viewModel.resetHabit(); confirmReset = false },
+            onConfirm = { haptics.confirm(); viewModel.resetHabit(); confirmReset = false },
             onDismiss = { confirmReset = false }
         )
     }
@@ -115,7 +117,7 @@ fun HabitDetailScreen(
         ConfirmDialog(
             title = "Eliminar \"${current.name}\"",
             message = "Se borrará este hábito y todo su historial de forma permanente. Esta acción no se puede deshacer.",
-            onConfirm = { viewModel.deleteHabit(onDeleted); confirmDelete = false },
+            onConfirm = { haptics.confirm(); viewModel.deleteHabit(onDeleted); confirmDelete = false },
             onDismiss = { confirmDelete = false }
         )
     }

@@ -41,6 +41,7 @@ class SettingsViewModel(
     fun setSeedColorLight(argb: Int) = viewModelScope.launch { settingsRepository.setSeedColorLight(argb) }
     fun setSeedColorDark(argb: Int) = viewModelScope.launch { settingsRepository.setSeedColorDark(argb) }
     fun setDynamicColor(enabled: Boolean) = viewModelScope.launch { settingsRepository.setDynamicColor(enabled) }
+    fun setHapticsEnabled(enabled: Boolean) = viewModelScope.launch { settingsRepository.setHapticsEnabled(enabled) }
     fun setCurrency(symbol: String) = viewModelScope.launch { settingsRepository.setCurrency(symbol) }
 
     fun setNotifyDailyQuote(enabled: Boolean) = viewModelScope.launch {

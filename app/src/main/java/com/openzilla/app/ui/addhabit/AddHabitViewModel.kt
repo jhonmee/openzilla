@@ -18,7 +18,8 @@ data class AddHabitUiState(
     val weeklyAmountText: String = "",
     val startedAt: Long = System.currentTimeMillis(),
     val goalHours: Int = 24,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    val sortOrder: Int = 0
 )
 
 class AddHabitViewModel(
@@ -45,7 +46,8 @@ class AddHabitViewModel(
                         weeklyAmountText = it.weeklyAmount?.toString() ?: "",
                         startedAt = it.startedAt,
                         goalHours = it.goalHours,
-                        createdAt = it.createdAt
+                        createdAt = it.createdAt,
+                        sortOrder = it.sortOrder
                     )
                 }
             }
@@ -78,7 +80,8 @@ class AddHabitViewModel(
                         weeklyAmount = if (state.costType == HabitCostType.MONEY || state.costType == HabitCostType.TIME) amount else null,
                         startedAt = state.startedAt,
                         goalHours = state.goalHours,
-                        createdAt = state.createdAt
+                        createdAt = state.createdAt,
+                        sortOrder = state.sortOrder
                     )
                 )
             } else {

@@ -4,6 +4,21 @@ Aplicación Android de código abierto para llevar el control de hábitos y adic
 quieres dejar (fumar, alcohol, redes sociales, compras impulsivas, etc.), inspirada en apps
 tipo "Quit That" pero pensada desde cero para ser **100% local y privada**.
 
+## Descargar
+
+### [⬇ Descargar la última versión (APK)](https://github.com/jhonmee/openzilla/releases/latest/download/openzilla.apk)
+
+Ese enlace apunta siempre a la versión más reciente, no hace falta actualizarlo nunca: cada
+vez que se sube un cambio a `main`, GitHub Actions compila la app, sube el número de versión
+(1.0.1, 1.0.2, 1.0.3…) y publica una release nueva con el APK adjunto. Puedes ver todas en
+[Releases](https://github.com/jhonmee/openzilla/releases).
+
+Al instalarlo, Android pedirá permiso para instalar apps de origen desconocido: es lo normal
+en cualquier app que no venga de una tienda. El APK va firmado con la clave de depuración de
+Android, que es la que permite publicarlo sin tener que guardar una clave privada en el
+repositorio; si algún día quieres firmarlo con una clave propia, basta con añadirla como
+secreto del repositorio y cambiar `assembleDebug` por `assembleRelease` en el flujo.
+
 ## Por qué existe
 
 Es una alternativa gratuita y auditable a apps similares que cobran por funciones básicas o
@@ -15,8 +30,10 @@ compras dentro de la app, no tiene anuncios y no puede conectarse a internet aun
 
 - Registra cualquier hábito o adicción que quieras dejar, con icono, categoría y tipo de
   coste (dinero / tiempo / evento).
+- Ordena la lista a tu gusto: mantén pulsado un hábito, se levanta y lo arrastras donde
+  quieras (la lista se desplaza sola al llegar a los bordes).
 - Contador de tiempo sin recaídas en tiempo real, con una barra de progreso hacia la meta
-  en curso (con una llama encendida en la punta del avance).
+  en curso, recorrida por una onda suave.
 - Escala de metas: eliges la primera al crear el hábito (6 h, 12 h, 1 día, 3 días, 1 semana…)
   y, en cuanto la alcanzas, la app pasa sola a la siguiente. El progreso nunca se reinicia
   por haber cumplido.
@@ -31,6 +48,8 @@ compras dentro de la app, no tiene anuncios y no puede conectarse a internet aun
 - Temas claro, oscuro, negro puro (OLED) o seguir al sistema, con color de acento
   personalizable por separado para cada modo. En Android 12 o superior puedes usar en su
   lugar los colores del sistema (Material You), tomados de tu fondo de pantalla.
+- Respuesta táctil (vibración breve) en botones y acciones, desactivable en Ajustes. Usa la
+  vibración estándar del sistema y no necesita ningún permiso.
 - Bloqueo opcional de la app con PIN (nunca se guarda en texto plano; se guarda con hash
   PBKDF2 + salt dentro de un almacén cifrado con Android Keystore).
 - Exportar/importar todos tus datos a un archivo `.json` que tú eliges dónde guardar —no
@@ -94,7 +113,7 @@ app/src/main/java/com/openzilla/app/
   ui/addhabit/  Asistente para crear/editar un hábito
   ui/detail/    Pantalla de detalle con las 4 pestañas (Resumen, Motivación, Progreso, Trofeos)
   ui/settings/  Ajustes, bloqueo por PIN, exportar/importar, borrar datos
-  ui/components/Piezas reutilizables (barra de progreso con llama, calendario, confirmación)
+  ui/components/Piezas reutilizables (barra de progreso, calendario, reordenar, confirmación)
   notification/ Notificaciones locales vía WorkManager
   util/         Categorías, formato de tiempo, trofeos, frases motivacionales
 ```

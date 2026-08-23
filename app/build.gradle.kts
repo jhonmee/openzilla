@@ -5,6 +5,12 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
 }
 
+// La versión la inyecta el flujo de GitHub Actions a partir de la última etiqueta publicada
+// (-PappVersionName / -PappVersionCode). Compilando en local, sin esas propiedades, sale
+// 1.0.0 y no hace falta configurar nada.
+val appVersionName: String = (project.findProperty("appVersionName") as String?) ?: "1.0.0"
+val appVersionCode: Int = (project.findProperty("appVersionCode") as String?)?.toIntOrNull() ?: 1
+
 android {
     namespace = "com.openzilla.app"
     compileSdk = 34
@@ -13,8 +19,8 @@ android {
         applicationId = "com.openzilla.app"
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = appVersionCode
+        versionName = appVersionName
         vectorDrawables { useSupportLibrary = true }
     }
 

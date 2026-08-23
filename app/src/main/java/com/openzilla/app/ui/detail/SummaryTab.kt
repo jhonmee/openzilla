@@ -26,7 +26,8 @@ import com.openzilla.app.data.HabitEntity
 import com.openzilla.app.data.HistoryEntity
 import com.openzilla.app.ui.components.CalendarGrid
 import com.openzilla.app.ui.components.ConfirmDialog
-import com.openzilla.app.ui.components.ProgressFlameBar
+import com.openzilla.app.ui.rememberHaptics
+import com.openzilla.app.ui.components.ProgressWaveBar
 import com.openzilla.app.util.buildHabitDayMap
 import com.openzilla.app.util.currentGoalHours
 import com.openzilla.app.util.dayStartOf
@@ -60,6 +61,7 @@ fun SummaryTab(
             delay(1_000)
         }
     }
+    val haptics = rememberHaptics()
     var monthAnchor by remember { mutableStateOf(Calendar.getInstance()) }
     var pendingRelapseDay by remember { mutableStateOf<Long?>(null) }
     val parts = elapsedParts(habit.startedAt, now)
@@ -87,7 +89,7 @@ fun SummaryTab(
                     modifier = Modifier.padding(top = 4.dp, bottom = 20.dp)
                 )
 
-                ProgressFlameBar(progress = goalProgress(habit.startedAt, habit.goalHours, now))
+                ProgressWaveBar(progress = goalProgress(habit.startedAt, habit.goalHours, now))
 
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
@@ -113,7 +115,7 @@ fun SummaryTab(
                     modifier = Modifier.padding(top = 2.dp)
                 )
 
-                OutlinedButton(onClick = onResetRequested, modifier = Modifier.padding(top = 20.dp)) {
+                OutlinedButton(onClick = { haptics.tap(); onResetRequested() }, modifier = Modifier.padding(top = 20.dp)) {
                     Text("Registrar recaída ahora")
                 }
             }
@@ -125,7 +127,7 @@ fun SummaryTab(
                 coveredRanges = dayMap.coveredRanges,
                 relapseDays = dayMap.relapseDays,
                 currentStreakStartDay = dayMap.currentStreakStartDay,
-                onDayClick = { pendingRelapseDay = it },
+                onDayClick = { haptics.tap(); pendingRelapseDay = it },
                 onPrevMonth = { monthAnchor = (monthAnchor.clone() as Calendar).apply { add(Calendar.MONTH, -1) } },
                 onNextMonth = { monthAnchor = (monthAnchor.clone() as Calendar).apply { add(Calendar.MONTH, 1) } }
             )
@@ -137,7 +139,7 @@ fun SummaryTab(
             title = "Registrar recaída",
             message = "Se marcará una recaída el ${dateFormat.format(Date(day))}. La racha actual se guardará en el historial y el contador arrancará desde ese día.",
             confirmLabel = "Registrar",
-            onConfirm = { onRelapseAt(middayOf(day)); pendingRelapseDay = null },
+            onConfirm = { haptics.confirm(); onRelapseAt(middayOf(day)); pendingRelapseDay = null },
             onDismiss = { pendingRelapseDay = null }
         )
     }

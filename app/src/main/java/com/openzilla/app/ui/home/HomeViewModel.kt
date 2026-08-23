@@ -20,6 +20,13 @@ class HomeViewModel(private val repository: HabitRepository) : ViewModel() {
         }
     }
 
+    /** Called once when a drag finishes, with the list exactly as the user left it. */
+    fun saveOrder(orderedIds: List<Long>, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            repository.saveHabitOrder(orderedIds).onFailure { onError(it.message ?: "No se pudo guardar el orden") }
+        }
+    }
+
     fun resetHabit(habit: HabitEntity, onError: (String) -> Unit) {
         viewModelScope.launch {
             repository.resetHabit(habit, System.currentTimeMillis()).onFailure { onError(it.message ?: "No se pudo reiniciar") }

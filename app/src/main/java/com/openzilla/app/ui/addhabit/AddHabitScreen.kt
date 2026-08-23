@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import com.openzilla.app.data.HabitCostType
 import com.openzilla.app.ui.components.ConfirmDialog
 import com.openzilla.app.ui.rememberOpenZillaViewModel
+import com.openzilla.app.ui.rememberHaptics
 import com.openzilla.app.util.HabitCategory
 import com.openzilla.app.util.SELECTABLE_GOALS
 import java.text.SimpleDateFormat
@@ -66,6 +67,7 @@ private enum class WizardStep(val title: String) {
 @Composable
 fun AddHabitScreen(editingHabitId: Long?, onDone: () -> Unit, onCancel: () -> Unit) {
     val viewModel = rememberOpenZillaViewModel { AddHabitViewModel(it.repository, editingHabitId) }
+    val haptics = rememberHaptics()
     var showCategoryPicker by remember { mutableStateOf(editingHabitId == null) }
     var stepIndex by remember { mutableIntStateOf(0) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -124,6 +126,7 @@ fun AddHabitScreen(editingHabitId: Long?, onDone: () -> Unit, onCancel: () -> Un
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Button(onClick = {
+                    haptics.tap()
                     if (!isLastStep) {
                         stepIndex++
                     } else {

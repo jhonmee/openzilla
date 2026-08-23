@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.openzilla.app.util.HabitCategory
+import com.openzilla.app.ui.rememberHaptics
 import kotlinx.coroutines.delay
 
 /** Cuánto se ve resaltada la fila elegida antes de pasar al siguiente paso. */
@@ -38,6 +39,7 @@ private const val SELECTION_FEEDBACK_MILLIS = 160L
 fun CategoryPickerScreen(onBack: () -> Unit, onPick: (HabitCategory) -> Unit) {
     // La fila tocada se queda pintada un instante antes de avanzar: sin esto la pantalla
     // cambia en el mismo frame del toque y no da tiempo a ver ninguna respuesta.
+    val haptics = rememberHaptics()
     var picked by remember { mutableStateOf<HabitCategory?>(null) }
     LaunchedEffect(picked) {
         val category = picked ?: return@LaunchedEffect
@@ -71,7 +73,7 @@ fun CategoryPickerScreen(onBack: () -> Unit, onPick: (HabitCategory) -> Unit) {
                         .padding(horizontal = 4.dp)
                         // Una vez elegida una categoría se ignoran más toques: evita disparar
                         // dos veces el paso siguiente si el usuario toca rápido dos filas.
-                        .clickable(enabled = picked == null) { picked = category }
+                        .clickable(enabled = picked == null) { haptics.tap(); picked = category }
                 )
             }
         }

@@ -1,5 +1,6 @@
 package com.openzilla.app.data
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -23,7 +24,16 @@ data class HabitEntity(
     val weeklyAmount: Double?,
     val startedAt: Long,
     val goalHours: Int = 24,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    /**
+     * Position in the home list. Lower comes first; the user sets it by dragging.
+     *
+     * The default is declared here as well as in the migration so the schema Room expects and
+     * the one actually on disk match exactly, whether the database was created fresh or
+     * migrated from version 1.
+     */
+    @ColumnInfo(defaultValue = "0")
+    val sortOrder: Int = 0
 )
 
 /** A personal, free-text reason the user wrote for quitting a given habit. */
