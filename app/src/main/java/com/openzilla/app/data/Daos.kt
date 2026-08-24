@@ -47,6 +47,9 @@ interface HabitDao {
 
     @Query("UPDATE habits SET sortOrder = :order WHERE id = :id")
     suspend fun updateSortOrder(id: Long, order: Int)
+
+    @Query("UPDATE habits SET lastWateredAt = :wateredAt, recoveryBonusMillis = :bonus WHERE id = :id")
+    suspend fun updateWatering(id: Long, wateredAt: Long, bonus: Long)
 }
 
 @Dao

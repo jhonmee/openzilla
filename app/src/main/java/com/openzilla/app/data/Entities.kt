@@ -33,7 +33,16 @@ data class HabitEntity(
      * migrated from version 1.
      */
     @ColumnInfo(defaultValue = "0")
-    val sortOrder: Int = 0
+    val sortOrder: Int = 0,
+    /** Cuándo se regó la planta por última vez. 0 = nunca. */
+    @ColumnInfo(defaultValue = "0")
+    val lastWateredAt: Long = 0,
+    /**
+     * Tiempo de recuperación ya ganado a base de riegos, en milisegundos. Se pone a cero en
+     * cada recaída: el riego acelera la recuperación en curso, no se acumula para la próxima.
+     */
+    @ColumnInfo(defaultValue = "0")
+    val recoveryBonusMillis: Long = 0
 )
 
 /** A personal, free-text reason the user wrote for quitting a given habit. */

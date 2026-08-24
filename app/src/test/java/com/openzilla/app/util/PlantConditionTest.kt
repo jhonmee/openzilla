@@ -1,6 +1,8 @@
 package com.openzilla.app.util
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -20,44 +22,87 @@ class PlantConditionTest {
     fun `sin recaídas previas la planta está sana`() {
         val condition = plantCondition(startedAt = now - 10 * day, previousStreakMillis = null, now = now)
         assertEquals(0f, condition.dryness, 0.001f)
+        assertFalse(condition.recovering)
         assertEquals(growthStageFor(10 * day), condition.stage)
     }
 
     @Test
-    fun `recién recaído la planta conserva su tamaño pero seca del todo`() {
-        val previous = 200 * day // era un árbol
-        val condition = plantCondition(startedAt = now, previousStreakMillis = previous, now = now)
-        assertEquals(growthStageFor(previous), condition.stage)
-        assertEquals(1f, condition.dryness, 0.001f)
+    fun `perder mucho cuesta más de recuperar que perder poco`() {
+        val corta = recoveryDurationFor(2 * day)
+        val media = recoveryDurationFor(30 * day)
+        val larga = recoveryDurationFor(90 * day)
+        assertTrue("$corta debería ser menor que $media", corta < media)
+        assertTrue("$media debería ser menor que $larga", media < larga)
     }
 
     @Test
-    fun `a mitad de la recuperación está a medio secar y a medio encoger`() {
+    fun `la recuperación tiene suelo y techo`() {
+        // Una racha de una hora no deja la planta seca un minuto...
+        assertEquals(12 * hour, recoveryDurationFor(hour))
+        // ...ni perder cinco años la deja marrón media vida.
+        assertEquals(10 * day, recoveryDurationFor(5 * 365 * day))
+    }
+
+    @Test
+    fun `recién recaído la planta conserva su tamaño pero seca del todo`() {
         val previous = 200 * day
-        val elapsed = RECOVERY_MILLIS / 2
+        val condition = plantCondition(startedAt = now, previousStreakMillis = previous, now = now)
+        assertEquals(growthStageFor(previous), condition.stage)
+        assertEquals(1f, condition.dryness, 0.001f)
+        assertTrue(condition.recovering)
+        assertEquals(recoveryDurationFor(previous), condition.recoveryRemaining)
+    }
+
+    @Test
+    fun `a mitad de la recuperación está a medio secar`() {
+        val previous = 200 * day
+        val elapsed = recoveryDurationFor(previous) / 2
         val condition = plantCondition(startedAt = now - elapsed, previousStreakMillis = previous, now = now)
         assertEquals(0.5f, condition.dryness, 0.02f)
-        val big = growthStageFor(previous).ordinal
-        val small = growthStageFor(elapsed).ordinal
-        assertTrue(
-            "esperaba una etapa intermedia, fue ${condition.stage}",
-            condition.stage.ordinal in small..big
-        )
+        assertNotNull(condition.recoveryRemaining)
     }
 
     @Test
     fun `al terminar de hidratarse coincide con la racha nueva, sin saltos`() {
         val previous = 200 * day
-        val condition = plantCondition(startedAt = now - RECOVERY_MILLIS, previousStreakMillis = previous, now = now)
+        val elapsed = recoveryDurationFor(previous)
+        val condition = plantCondition(startedAt = now - elapsed, previousStreakMillis = previous, now = now)
         assertEquals(0f, condition.dryness, 0.001f)
-        assertEquals(growthStageFor(RECOVERY_MILLIS), condition.stage)
+        assertNull(condition.recoveryRemaining)
+        assertEquals(growthStageFor(elapsed), condition.stage)
+    }
+
+    @Test
+    fun `regar adelanta la recuperación`() {
+        val previous = 200 * day
+        val elapsed = day
+        val sinRegar = plantCondition(now - elapsed, previous, 0L, now)
+        val regado = plantCondition(now - elapsed, previous, wateringBoostFor(previous), now)
+        assertTrue("regar debería dejarla menos seca", regado.dryness < sinRegar.dryness)
+        assertTrue(regado.recoveryRemaining!! < sinRegar.recoveryRemaining!!)
+    }
+
+    @Test
+    fun `regar lo suficiente termina la recuperación`() {
+        val previous = 200 * day
+        val total = recoveryDurationFor(previous)
+        val condition = plantCondition(now, previous, total, now)
+        assertEquals(0f, condition.dryness, 0.001f)
+        assertNull(condition.recoveryRemaining)
+    }
+
+    @Test
+    fun `sólo se puede regar una vez al día`() {
+        assertTrue("nunca regada", canWaterToday(0L, now))
+        assertFalse("ya regada hoy", canWaterToday(now - hour, now))
+        assertTrue("regada ayer", canWaterToday(now - 2 * day, now))
     }
 
     @Test
     fun `la planta nunca se ve más pequeña de lo que le toca por su racha`() {
         val previous = 200 * day
-        listOf(0L, hour, day, 2 * day, RECOVERY_MILLIS, 10 * day).forEach { elapsed ->
-            val condition = plantCondition(now - elapsed, previous, now)
+        listOf(0L, hour, day, 2 * day, 10 * day).forEach { elapsed ->
+            val condition = plantCondition(now - elapsed, previous, 0L, now)
             assertTrue(
                 "con $elapsed ms salió ${condition.stage}",
                 condition.stage.ordinal >= growthStageFor(elapsed).ordinal
@@ -69,6 +114,7 @@ class PlantConditionTest {
     fun `si la racha rota era más corta que la actual no hay nada que marchitar`() {
         val condition = plantCondition(startedAt = now - 50 * day, previousStreakMillis = hour, now = now)
         assertEquals(0f, condition.dryness, 0.001f)
+        assertFalse(condition.recovering)
     }
 
     @Test

@@ -66,8 +66,14 @@ class HabitRepository(context: Context) {
     suspend fun resetHabit(habit: HabitEntity, resetAt: Long, note: String? = null): Result<Unit> = runCatching {
         db.withTransaction {
             historyDao.insert(HistoryEntity(habitId = habit.id, streakStart = habit.startedAt, streakEnd = resetAt, note = note))
-            habitDao.update(habit.copy(startedAt = resetAt))
+            // El riego acumulado se borra: pertenecía a la recuperación anterior.
+            habitDao.update(habit.copy(startedAt = resetAt, lastWateredAt = 0, recoveryBonusMillis = 0))
         }
+    }
+
+    /** Riega la planta: apunta el momento y suma el adelanto de recuperación conseguido. */
+    suspend fun waterPlant(habit: HabitEntity, wateredAt: Long, bonusToAdd: Long): Result<Unit> = runCatching {
+        habitDao.updateWatering(habit.id, wateredAt, habit.recoveryBonusMillis + bonusToAdd)
     }
 
     suspend fun addReason(habitId: Long, text: String): Result<Long> = runCatching {

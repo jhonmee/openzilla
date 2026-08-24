@@ -30,6 +30,7 @@ import com.openzilla.app.ui.components.ConfirmDialog
 import com.openzilla.app.ui.goalLabel
 import com.openzilla.app.ui.rememberHaptics
 import com.openzilla.app.ui.components.ProgressWaveBar
+import com.openzilla.app.ui.components.RelapseTimeDialog
 import com.openzilla.app.ui.components.rememberNowTicker
 import com.openzilla.app.util.buildHabitDayMap
 import com.openzilla.app.util.currentGoalHours
@@ -39,11 +40,10 @@ import com.openzilla.app.util.formatDurationShort
 import com.openzilla.app.util.goalPercentText
 import com.openzilla.app.util.goalProgress
 import com.openzilla.app.util.goalRemainingMillis
-import com.openzilla.app.util.middayOf
-import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
-import java.util.Locale
+
+/** Valor centinela: no es un día concreto, hay que preguntar también la fecha. */
+private const val ANY_MOMENT = -1L
 
 @Composable
 fun SummaryTab(
@@ -58,7 +58,9 @@ fun SummaryTab(
     val nowState = rememberNowTicker()
     val haptics = rememberHaptics()
     var monthAnchor by remember { mutableStateOf(Calendar.getInstance()) }
-    var pendingRelapseDay by remember { mutableStateOf<Long?>(null) }
+    // El día elegido en el calendario, o ANY_MOMENT cuando se pulsa el botón y hay que
+    // preguntar también la fecha.
+    var pickingRelapseFor by remember { mutableStateOf<Long?>(null) }
 
 
     // El mapa de días depende de los datos guardados y del día en curso, no del reloj. El
@@ -69,7 +71,6 @@ fun SummaryTab(
     val dayMap = remember(habit.id, habit.startedAt, history, todayStart) {
         buildHabitDayMap(habit.startedAt, history.map { it.streakStart to it.streakEnd }, todayStart)
     }
-    val dateFormat = remember { SimpleDateFormat("d MMMM yyyy", Locale.getDefault()) }
 
     LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         item {
@@ -113,8 +114,8 @@ fun SummaryTab(
                     modifier = Modifier.padding(top = 2.dp)
                 )
 
-                OutlinedButton(onClick = { haptics.tap(); onResetRequested() }, modifier = Modifier.padding(top = 20.dp)) {
-                    Text(stringResource(R.string.summary_register_relapse_now))
+                OutlinedButton(onClick = { haptics.tap(); pickingRelapseFor = ANY_MOMENT }, modifier = Modifier.padding(top = 20.dp)) {
+                    Text(stringResource(R.string.summary_register_relapse))
                 }
             }
         }
@@ -125,20 +126,22 @@ fun SummaryTab(
                 coveredRanges = dayMap.coveredRanges,
                 relapseDays = dayMap.relapseDays,
                 currentStreakStartDay = dayMap.currentStreakStartDay,
-                onDayClick = { haptics.tap(); pendingRelapseDay = it },
+                onDayClick = { haptics.tap(); pickingRelapseFor = it },
                 onPrevMonth = { monthAnchor = (monthAnchor.clone() as Calendar).apply { add(Calendar.MONTH, -1) } },
                 onNextMonth = { monthAnchor = (monthAnchor.clone() as Calendar).apply { add(Calendar.MONTH, 1) } }
             )
         }
     }
 
-    pendingRelapseDay?.let { day ->
-        ConfirmDialog(
-            title = stringResource(R.string.relapse_title),
-            message = stringResource(R.string.relapse_message, dateFormat.format(Date(day))),
-            confirmLabel = stringResource(R.string.relapse_confirm),
-            onConfirm = { haptics.confirm(); onRelapseAt(middayOf(day)); pendingRelapseDay = null },
-            onDismiss = { pendingRelapseDay = null }
+    pickingRelapseFor?.let { day ->
+        RelapseTimeDialog(
+            dayStart = day.takeIf { it != ANY_MOMENT },
+            onDismiss = { pickingRelapseFor = null },
+            onPicked = { moment ->
+                pickingRelapseFor = null
+                haptics.confirm()
+                onRelapseAt(moment)
+            }
         )
     }
 }

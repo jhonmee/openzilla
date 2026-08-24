@@ -11,9 +11,6 @@ fun dayStartOf(millis: Long): Long = Calendar.getInstance().apply {
     set(Calendar.MILLISECOND, 0)
 }.timeInMillis
 
-/** Midday of a given day — the instant used when a relapse is recorded from the calendar. */
-fun middayOf(dayStart: Long): Long = dayStart + 12 * 3_600_000L
-
 /**
  * Everything the calendar needs to paint a habit, expressed in whole local days.
  *

@@ -36,8 +36,10 @@ secreto del repositorio y cambiar `assembleDebug` por `assembleRelease` en el fl
   rachas, recaídas por mes, ahorro acumulado y reparto por tipo.
 - Jardín: cada hábito es una planta que crece con su racha, de semilla a árbol en diez
   etapas. La especie (roble, pino, palmera, cerezo…) no se descubre hasta que la planta
-  crece. Una recaída no vacía la maceta: la planta se seca y tarda unos días en recuperar
-  el verde. Dibujado con geometría, así que no añade nada al tamaño de la app.
+  crece. Una recaída no vacía la maceta: la planta se seca y tarda en recuperar el verde,
+  tanto más cuanto más larga fuera la racha perdida. Tocando una planta se abre a pantalla
+  completa, con la cuenta atrás de recuperación, un riego diario que la acelera y la frase
+  del día. Dibujado con geometría, así que no añade nada al tamaño de la app.
 - Cuentas por hábito: lo ahorrado en la racha actual y en total, lo que se fue en recaídas
   y a cuánto asciende el ritmo al mes y al año, además de un mapa de constancia de las
   últimas doce semanas.

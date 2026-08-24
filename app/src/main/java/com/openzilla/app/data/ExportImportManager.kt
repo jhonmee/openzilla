@@ -22,7 +22,9 @@ data class HabitDto(
     val createdAt: Long,
     // Con valor por defecto para que las copias hechas antes de que existiera el orden
     // manual se sigan importando sin tocar nada (y las nuevas se lean en versiones viejas).
-    val sortOrder: Int = 0
+    val sortOrder: Int = 0,
+    val lastWateredAt: Long = 0,
+    val recoveryBonusMillis: Long = 0
 )
 
 @Serializable
@@ -53,7 +55,7 @@ class ExportImportManager(private val context: Context, private val repository: 
             val data = repository.getAllForExport()
             val file = ExportFile(
                 exportedAt = System.currentTimeMillis(),
-                habits = data.habits.map { HabitDto(it.id, it.name, it.iconKey, it.costType.name, it.weeklyAmount, it.startedAt, it.goalHours, it.createdAt, it.sortOrder) },
+                habits = data.habits.map { HabitDto(it.id, it.name, it.iconKey, it.costType.name, it.weeklyAmount, it.startedAt, it.goalHours, it.createdAt, it.sortOrder, it.lastWateredAt, it.recoveryBonusMillis) },
                 reasons = data.reasons.map { ReasonDto(it.id, it.habitId, it.text, it.createdAt) },
                 history = data.history.map { HistoryDto(it.id, it.habitId, it.streakStart, it.streakEnd, it.note) }
             )
@@ -74,7 +76,7 @@ class ExportImportManager(private val context: Context, private val repository: 
 
             val payload = ExportPayload(
                 habits = file.habits.map {
-                    HabitEntity(it.id, it.name, it.iconKey, runCatching { HabitCostType.valueOf(it.costType) }.getOrDefault(HabitCostType.EVENT), it.weeklyAmount, it.startedAt, it.goalHours, it.createdAt, it.sortOrder)
+                    HabitEntity(it.id, it.name, it.iconKey, runCatching { HabitCostType.valueOf(it.costType) }.getOrDefault(HabitCostType.EVENT), it.weeklyAmount, it.startedAt, it.goalHours, it.createdAt, it.sortOrder, it.lastWateredAt, it.recoveryBonusMillis)
                 },
                 reasons = file.reasons.map { ReasonEntity(it.id, it.habitId, it.text, it.createdAt) },
                 history = file.history.map { HistoryEntity(it.id, it.habitId, it.streakStart, it.streakEnd, it.note) }

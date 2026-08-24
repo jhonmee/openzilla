@@ -16,6 +16,7 @@ import com.openzilla.app.data.AppSettings
 import com.openzilla.app.ui.addhabit.AddHabitScreen
 import com.openzilla.app.ui.detail.HabitDetailScreen
 import com.openzilla.app.ui.garden.GardenScreen
+import com.openzilla.app.ui.garden.PlantScreen
 import com.openzilla.app.ui.home.HomeScreen
 import com.openzilla.app.ui.settings.SettingsScreen
 import com.openzilla.app.ui.stats.GlobalStatsScreen
@@ -27,6 +28,8 @@ private object Routes {
     const val SETTINGS = "settings"
     const val STATS = "stats"
     const val GARDEN = "garden"
+    const val PLANT = "plant/{habitId}"
+    fun plant(habitId: Long) = "plant/$habitId"
     fun addHabit(habitId: Long? = null) = if (habitId == null) "add_habit" else "add_habit?habitId=$habitId"
     fun detail(habitId: Long) = "detail/$habitId"
 }
@@ -99,7 +102,18 @@ fun OpenZillaNavHost(settings: AppSettings) {
         }
         composable(Routes.GARDEN) {
             GardenScreen(
-                onOpenHabit = { id -> navController.navigate(Routes.detail(id)) },
+                onOpenHabit = { id -> navController.navigate(Routes.plant(id)) },
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable(
+            route = Routes.PLANT,
+            arguments = listOf(navArgument("habitId") { type = NavType.LongType })
+        ) { entry ->
+            val habitId = entry.arguments?.getLong("habitId") ?: return@composable
+            PlantScreen(
+                habitId = habitId,
+                onOpenCalendar = { id -> navController.navigate(Routes.detail(id)) },
                 onBack = { navController.popBackStack() }
             )
         }

@@ -143,10 +143,23 @@
     <string name="summary_time_clean">Tiempo sin recaídas</string>
     <string name="summary_remaining">Te faltan %1$s</string>
     <string name="summary_max_goal">¡Meta máxima alcanzada!</string>
-    <string name="summary_register_relapse_now">Registrar recaída ahora</string>
     <string name="relapse_title">Registrar recaída</string>
-    <string name="relapse_message">Se marcará una recaída el %1$s. La racha actual se guardará en el historial y el contador arrancará desde ese día.</string>
-    <string name="relapse_confirm">Registrar</string>
+    <string name="relapse_when">¿Cuándo ocurrió?</string>
+    <string name="relapse_now">Ahora mismo</string>
+    <string name="relapse_pick_date">Elegir fecha y hora</string>
+    <string name="relapse_time_now">A la hora actual</string>
+    <string name="relapse_pick_time">Elegir la hora</string>
+    <string name="summary_register_relapse">Registrar recaída</string>
+
+    <!-- Pantalla de la planta -->
+    <string name="plant_recovering_in">Se recupera en %1$s</string>
+    <string name="plant_recovering_title">Recuperándose</string>
+    <string name="plant_healthy">Tu planta está sana</string>
+    <string name="plant_water">Regar</string>
+    <string name="plant_watered_today">Ya la has regado hoy</string>
+    <string name="plant_water_hint">Riégala una vez al día para adelantar la recuperación.</string>
+    <string name="plant_open_calendar">Ver el calendario</string>
+    <string name="plant_nudge_hint">Arrástrala un poco: se mueve.</string>
 
     <!-- Calendario -->
     <string name="calendar_prev_month">Mes anterior</string>

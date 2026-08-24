@@ -40,9 +40,20 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
     }
 }
 
+/**
+ * Adds the two columns the garden's watering needs. Both son puramente decorativos: si se
+ * quedaran a cero, la app seguiría contando el tiempo exactamente igual.
+ */
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE habits ADD COLUMN lastWateredAt INTEGER NOT NULL DEFAULT 0")
+        db.execSQL("ALTER TABLE habits ADD COLUMN recoveryBonusMillis INTEGER NOT NULL DEFAULT 0")
+    }
+}
+
 @Database(
     entities = [HabitEntity::class, ReasonEntity::class, HistoryEntity::class],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -63,7 +74,7 @@ abstract class AppDatabase : RoomDatabase() {
                 // Deliberately no fallbackToDestructiveMigration(): if a future schema change
                 // ever ships without its migration, the app must fail loudly rather than
                 // silently wipe the user's history.
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                 .build()
                 .also { instance = it }
         }

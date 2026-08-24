@@ -21,7 +21,9 @@ data class AddHabitUiState(
     val startedAt: Long = System.currentTimeMillis(),
     val goalHours: Int = 24,
     val createdAt: Long = System.currentTimeMillis(),
-    val sortOrder: Int = 0
+    val sortOrder: Int = 0,
+    val lastWateredAt: Long = 0,
+    val recoveryBonusMillis: Long = 0
 )
 
 class AddHabitViewModel(
@@ -50,7 +52,9 @@ class AddHabitViewModel(
                         startedAt = it.startedAt,
                         goalHours = it.goalHours,
                         createdAt = it.createdAt,
-                        sortOrder = it.sortOrder
+                        sortOrder = it.sortOrder,
+                        lastWateredAt = it.lastWateredAt,
+                        recoveryBonusMillis = it.recoveryBonusMillis
                     )
                 }
             }
@@ -84,7 +88,9 @@ class AddHabitViewModel(
                         startedAt = state.startedAt,
                         goalHours = state.goalHours,
                         createdAt = state.createdAt,
-                        sortOrder = state.sortOrder
+                        sortOrder = state.sortOrder,
+                        lastWateredAt = state.lastWateredAt,
+                        recoveryBonusMillis = state.recoveryBonusMillis
                     )
                 )
             } else {

@@ -165,7 +165,12 @@ private fun PotCell(
 ) {
     val now = nowState.value
     val elapsed = (now - habit.startedAt).coerceAtLeast(0)
-    val condition = plantCondition(habit.startedAt, previousStreakMillis, now)
+    val condition = plantCondition(
+        startedAt = habit.startedAt,
+        previousStreakMillis = previousStreakMillis,
+        recoveryBonusMillis = habit.recoveryBonusMillis,
+        now = now
+    )
     val stage = condition.stage
     // La especie sale del id, no de la base de datos: no hace falta columna ni migración y
     // sigue siendo la misma después de cerrar la app.

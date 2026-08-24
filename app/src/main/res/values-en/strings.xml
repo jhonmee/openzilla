@@ -140,10 +140,23 @@
     <string name="summary_time_clean">Time without relapses</string>
     <string name="summary_remaining">%1$s to go</string>
     <string name="summary_max_goal">Top goal reached!</string>
-    <string name="summary_register_relapse_now">Record a relapse now</string>
     <string name="relapse_title">Record relapse</string>
-    <string name="relapse_message">A relapse will be recorded on %1$s. The current streak will be saved to the history and the counter will start again from that day.</string>
-    <string name="relapse_confirm">Record</string>
+    <string name="relapse_when">When did it happen?</string>
+    <string name="relapse_now">Right now</string>
+    <string name="relapse_pick_date">Pick a date and time</string>
+    <string name="relapse_time_now">At the current time</string>
+    <string name="relapse_pick_time">Pick the time</string>
+    <string name="summary_register_relapse">Record a relapse</string>
+
+    <!-- Plant screen -->
+    <string name="plant_recovering_in">Green again in %1$s</string>
+    <string name="plant_recovering_title">Recovering</string>
+    <string name="plant_healthy">Your plant is healthy</string>
+    <string name="plant_water">Water it</string>
+    <string name="plant_watered_today">Already watered today</string>
+    <string name="plant_water_hint">Water it once a day to speed up the recovery.</string>
+    <string name="plant_open_calendar">Open the calendar</string>
+    <string name="plant_nudge_hint">Drag it a little: it moves.</string>
 
     <!-- Calendar -->
     <string name="calendar_prev_month">Previous month</string>
