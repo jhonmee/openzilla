@@ -187,6 +187,24 @@
     <string name="stats_now">Now</string>
     <string name="stats_relapses_logged">Recorded relapses</string>
     <string name="stats_held">held for %1$s</string>
+    <string name="stats_since">You quit on %1$s</string>
+    <string name="stats_range_title">How long you usually last</string>
+    <string name="stats_range_hint">Where your current streak sits between your worst and your best.</string>
+    <string name="stats_shortest">Shortest</string>
+    <string name="stats_longest">Longest</string>
+    <string name="stats_heatmap_title">Consistency map</string>
+    <string name="stats_heatmap_hint">The last 12 weeks, one square per day.</string>
+    <string name="stats_ledger_title">The habit's ledger</string>
+    <string name="stats_ledger_hint">Worked out from the weekly cost you entered when creating it.</string>
+    <string name="stats_saved_current">Saved this streak</string>
+    <string name="stats_saved_total">Saved in total</string>
+    <string name="stats_relapse_cost">Lost to relapses</string>
+    <string name="stats_relapse_cost_hint">An estimate: each relapse counts as one day of the old spending.</string>
+    <string name="stats_net">Balance</string>
+    <string name="stats_pace_month">Keep this up and in a month</string>
+    <string name="stats_pace_year">And in a year</string>
+    <string name="stats_hours_value">%1$s h</string>
+    <string name="garden_recovering">Recovering</string>
 
     <!-- Trophies -->
     <string name="trophy_achieved">Achieved!</string>

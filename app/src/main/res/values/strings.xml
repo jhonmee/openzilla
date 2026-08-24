@@ -190,6 +190,24 @@
     <string name="stats_now">Ahora</string>
     <string name="stats_relapses_logged">Recaídas registradas</string>
     <string name="stats_held">aguantaste %1$s</string>
+    <string name="stats_since">Lo dejaste el %1$s</string>
+    <string name="stats_range_title">Cuánto sueles aguantar</string>
+    <string name="stats_range_hint">Dónde cae tu racha actual entre tu peor y tu mejor marca.</string>
+    <string name="stats_shortest">Más corta</string>
+    <string name="stats_longest">Más larga</string>
+    <string name="stats_heatmap_title">Mapa de constancia</string>
+    <string name="stats_heatmap_hint">Las últimas 12 semanas, un cuadro por día.</string>
+    <string name="stats_ledger_title">Cuentas del hábito</string>
+    <string name="stats_ledger_hint">Calculado con el gasto semanal que declaraste al crearlo.</string>
+    <string name="stats_saved_current">Ahorrado en esta racha</string>
+    <string name="stats_saved_total">Ahorrado en total</string>
+    <string name="stats_relapse_cost">Se fue en recaídas</string>
+    <string name="stats_relapse_cost_hint">Estimado: cada recaída se cuenta como un día del gasto de antes.</string>
+    <string name="stats_net">Balance</string>
+    <string name="stats_pace_month">Si sigues así, en un mes</string>
+    <string name="stats_pace_year">Y en un año</string>
+    <string name="stats_hours_value">%1$s h</string>
+    <string name="garden_recovering">Recuperándose</string>
 
     <!-- Trofeos -->
     <string name="trophy_achieved">¡Logrado!</string>

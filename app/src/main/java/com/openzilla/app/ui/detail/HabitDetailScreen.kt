@@ -110,7 +110,7 @@ fun HabitDetailScreen(
                     onRelapseAt = viewModel::registerRelapseAt
                 )
                 1 -> MotivationTab(habit = current, reasons = reasons, currencySymbol = currencySymbol, onAddReason = viewModel::addReason, onDeleteReason = viewModel::deleteReason)
-                2 -> StatsTab(habit = current, history = history)
+                2 -> StatsTab(habit = current, history = history, currencySymbol = currencySymbol)
                 3 -> TrophiesTab(current)
             }
         }

@@ -48,7 +48,8 @@ import com.openzilla.app.ui.rememberHaptics
 import com.openzilla.app.ui.rememberOpenZillaViewModel
 import com.openzilla.app.util.formatDurationShort
 import com.openzilla.app.util.PlantSpecies
-import com.openzilla.app.util.growthStageFor
+import com.openzilla.app.util.lastBrokenStreakMillis
+import com.openzilla.app.util.plantCondition
 
 /** Un ciclo entero de brisa. Lento a propósito: se nota vivo sin llamar la atención. */
 private const val BREEZE_MILLIS = 5200
@@ -68,6 +69,7 @@ private const val COLUMNS = 3
 fun GardenScreen(onOpenHabit: (Long) -> Unit, onBack: () -> Unit) {
     val viewModel = rememberOpenZillaViewModel { GardenViewModel(it.repository) }
     val habits by viewModel.habits.collectAsStateWithLifecycle()
+    val history by viewModel.history.collectAsStateWithLifecycle()
     val haptics = rememberHaptics()
 
     // Un minuto: las plantas cambian de etapa en horas, no hay nada que refrescar más a menudo.
@@ -110,6 +112,12 @@ fun GardenScreen(onOpenHabit: (Long) -> Unit, onBack: () -> Unit) {
         val totalCare = remember(habits, now) {
             habits.sumOf { (now - it.startedAt).coerceAtLeast(0) }
         }
+        // La duración de la última racha rota de cada hábito, calculada una vez y no por
+        // maceta: con muchos hábitos, recorrer el historial entero en cada celda se notaría.
+        val brokenStreaks = remember(history) {
+            history.groupBy { it.habitId }
+                .mapValues { (_, rows) -> lastBrokenStreakMillis(rows.map { it.streakStart to it.streakEnd }) }
+        }
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(COLUMNS),
@@ -136,6 +144,7 @@ fun GardenScreen(onOpenHabit: (Long) -> Unit, onBack: () -> Unit) {
                 PotCell(
                     habit = habit,
                     index = index,
+                    previousStreakMillis = brokenStreaks[habit.id],
                     nowState = nowState,
                     breeze = breeze,
                     onClick = { haptics.tap(); onOpenHabit(habit.id) }
@@ -149,13 +158,15 @@ fun GardenScreen(onOpenHabit: (Long) -> Unit, onBack: () -> Unit) {
 private fun PotCell(
     habit: HabitEntity,
     index: Int,
+    previousStreakMillis: Long?,
     nowState: State<Long>,
     breeze: State<Float>,
     onClick: () -> Unit
 ) {
-    val elapsed = (nowState.value - habit.startedAt).coerceAtLeast(0)
-    val stage = growthStageFor(elapsed)
-    val growth = stage.progressWithin(elapsed)
+    val now = nowState.value
+    val elapsed = (now - habit.startedAt).coerceAtLeast(0)
+    val condition = plantCondition(habit.startedAt, previousStreakMillis, now)
+    val stage = condition.stage
     // La especie sale del id, no de la base de datos: no hace falta columna ni migración y
     // sigue siendo la misma después de cerrar la app.
     val species = remember(habit.id) { PlantSpecies.forHabit(habit.id) }
@@ -180,8 +191,9 @@ private fun PotCell(
             drawPottedPlant(
                 stage = stage,
                 species = species,
-                growth = growth,
+                growth = condition.growth,
                 sway = swayFor(breeze.value, index),
+                dryness = condition.dryness,
                 palette = palette
             )
         }
@@ -203,10 +215,10 @@ private fun PotCell(
         )
         Text(
             // Hasta que crece no se sabe qué es: el nombre de la especie es parte del premio.
-            if (revealed) {
-                stringResource(R.string.garden_species_stage, stringResource(species.nameRes), stringResource(stage.labelRes))
-            } else {
-                stringResource(R.string.species_unknown)
+            when {
+                condition.dryness > 0f -> stringResource(R.string.garden_recovering)
+                revealed -> stringResource(R.string.garden_species_stage, stringResource(species.nameRes), stringResource(stage.labelRes))
+                else -> stringResource(R.string.species_unknown)
             },
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,

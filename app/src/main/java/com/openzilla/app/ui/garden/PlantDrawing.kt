@@ -58,8 +58,16 @@ fun DrawScope.drawPottedPlant(
     species: PlantSpecies,
     growth: Float,
     sway: Float,
+    dryness: Float,
     palette: PlantPalette
 ) {
+    val dry = dryness.coerceIn(0f, 1f)
+    // La planta seca conserva su forma y pierde el color: es lo que hace que una recaída se
+    // vea como un revés del que se vuelve, y no como haber empezado de cero.
+    val shown = palette.copy(
+        foliage = lerp(palette.foliage, DRY_LEAF, dry * 0.88f),
+        foliageDark = lerp(palette.foliageDark, DRY_LEAF_DARK, dry * 0.88f)
+    )
     val w = size.width
     val h = size.height
     val cx = w / 2f
@@ -90,7 +98,7 @@ fun DrawScope.drawPottedPlant(
 
     val base = potTop - rimHeight
     if (stage == GrowthStage.SEED) {
-        drawCircle(palette.foliageDark, radius = w * 0.035f, center = Offset(cx, base - h * 0.012f))
+        drawCircle(shown.foliageDark, radius = w * 0.035f, center = Offset(cx, base - h * 0.012f))
         return
     }
 
@@ -117,21 +125,36 @@ fun DrawScope.drawPottedPlant(
     }
     drawPath(
         stem,
-        color = if (hasCanopy) palette.trunk else palette.foliageDark,
+        color = if (hasCanopy) shown.trunk else shown.foliageDark,
         style = Stroke(width = trunkWidth, cap = StrokeCap.Round)
     )
 
     val top = Offset(cx + swayX, topY)
     if (hasCanopy) {
-        drawCanopy(species, top, w * 0.22f * species.canopyScale, palette)
+        // La copa seca encoge un poco, además de perder el verde.
+        drawCanopy(species, top, w * 0.22f * species.canopyScale * (1f - 0.14f * dry), shown)
     } else {
         val leafShape = if (revealed) species.leaf else LeafShape.OVAL
-        val count = (STAGE_LEAVES[stage.ordinal] * if (revealed) species.leafiness else 1f).toInt().coerceAtLeast(2)
-        drawLeaves(leafShape, count, cx, base, plantHeight, swayX, w, palette)
+        val full = (STAGE_LEAVES[stage.ordinal] * if (revealed) species.leafiness else 1f)
+        // Secándose se caen hojas, no sólo se apagan.
+        val count = (full * (1f - 0.35f * dry)).toInt().coerceAtLeast(2)
+        drawLeaves(leafShape, count, cx, base, plantHeight, swayX, w, dry, shown)
+    }
+
+    // Hojas caídas sobre la tierra cuando lleva un rato seca.
+    if (dry > 0.35f) {
+        repeat(3) { index ->
+            val offset = (index - 1) * w * 0.11f
+            drawOval(
+                color = shown.foliageDark,
+                topLeft = Offset(cx + offset - w * 0.045f, base - h * 0.004f),
+                size = Size(w * 0.09f, h * 0.016f)
+            )
+        }
     }
 
     // --- Capullos y flores ---
-    if (revealed && species.flowers && stage >= GrowthStage.BUDDING) {
+    if (revealed && species.flowers && stage >= GrowthStage.BUDDING && dry < 0.5f) {
         val bloomed = stage >= GrowthStage.FLOWERING
         val radius = w * (if (bloomed) 0.045f else 0.028f)
         val spots = if (bloomed) 5 else 3
@@ -139,7 +162,7 @@ fun DrawScope.drawPottedPlant(
             val t = 0.45f + 0.5f * index / spots
             val y = base - plantHeight * t
             val x = cx + swayX * t + (if (index % 2 == 0) 1f else -1f) * w * 0.12f
-            if (bloomed) drawFlower(Offset(x, y), radius, palette) else drawCircle(palette.bloom, radius, Offset(x, y))
+            if (bloomed) drawFlower(Offset(x, y), radius, shown) else drawCircle(shown.bloom, radius, Offset(x, y))
         }
     }
 }
@@ -152,6 +175,7 @@ private fun DrawScope.drawLeaves(
     plantHeight: Float,
     swayX: Float,
     w: Float,
+    dry: Float,
     palette: PlantPalette
 ) {
     val length = when (shape) {
@@ -169,7 +193,9 @@ private fun DrawScope.drawLeaves(
         val y = base - plantHeight * t
         val x = cx + swayX * t
         val toRight = index % 2 == 0
-        rotate(degrees = if (toRight) -35f else 35f, pivot = Offset(x, y)) {
+        // Con la planta seca las hojas van cayendo hasta apuntar hacia abajo.
+        val angle = if (toRight) -35f + 70f * dry else 35f - 70f * dry
+        rotate(degrees = angle, pivot = Offset(x, y)) {
             drawOval(
                 color = if (toRight) palette.foliage else palette.foliageDark,
                 topLeft = Offset(if (toRight) x else x - length, y - length * thickness / 2f),
@@ -242,6 +268,10 @@ fun swayFor(phase: Float, index: Int): Float = sin(phase + index * 0.7f)
 
 /** Verde genérico mientras la especie sigue siendo un secreto. */
 private val UNKNOWN_TINT = Color(0xFF4C8B3F)
+
+/** Tonos de hoja seca. No salen del tema: una hoja marchita es marrón en cualquier paleta. */
+private val DRY_LEAF = Color(0xFFB08A46)
+private val DRY_LEAF_DARK = Color(0xFF7A5B32)
 
 /** Marrón de tronco y tierra; no se saca del tema porque un tronco gris no lee como tronco. */
 private val WOOD = Color(0xFF6B4A2F)

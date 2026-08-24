@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.openzilla.app.data.HabitEntity
 import com.openzilla.app.data.HabitRepository
+import com.openzilla.app.data.HistoryEntity
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -16,5 +17,9 @@ import kotlinx.coroutines.flow.stateIn
 class GardenViewModel(repository: HabitRepository) : ViewModel() {
 
     val habits: StateFlow<List<HabitEntity>> = repository.observeHabits()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    /** Hace falta para saber qué racha se rompió la última vez y, con eso, cuánto marchitar. */
+    val history: StateFlow<List<HistoryEntity>> = repository.observeAllHistory()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 }
