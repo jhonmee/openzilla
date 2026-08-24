@@ -12,16 +12,19 @@ import com.openzilla.app.R
  * is a second reading of the same `startedAt` the counters use, so it cannot drift from them
  * and it cannot break them.
  *
- * The rungs match the goal ladder on purpose: reaching a goal is also a visible jump in the
- * garden.
+ * The early rungs are deliberately close together (6h, 12h, a day): the first hours are when
+ * seeing something change actually helps.
  */
 enum class GrowthStage(val minHours: Int, @StringRes val labelRes: Int) {
     SEED(0, R.string.stage_seed),
     SPROUT(6, R.string.stage_sprout),
-    SEEDLING(24, R.string.stage_seedling),
-    PLANT(72, R.string.stage_plant),
-    BUSH(168, R.string.stage_bush),
-    SAPLING(720, R.string.stage_sapling),
+    SEEDLING(12, R.string.stage_seedling),
+    YOUNG(24, R.string.stage_young),
+    GROWING(72, R.string.stage_growing),
+    MATURE(168, R.string.stage_mature),
+    BUDDING(336, R.string.stage_budding),
+    FLOWERING(720, R.string.stage_flowering),
+    SAPLING(2_160, R.string.stage_sapling),
     TREE(8_760, R.string.stage_tree);
 
     /** 0f..1f inside this stage; the drawing uses it so growth looks continuous, not stepped. */
@@ -32,6 +35,12 @@ enum class GrowthStage(val minHours: Int, @StringRes val labelRes: Int) {
         val elapsed = elapsedMillis.coerceAtLeast(0).toDouble()
         return ((elapsed - from) / (to - from)).coerceIn(0.0, 1.0).toFloat()
     }
+
+    /**
+     * Whether the species is still a secret. The first two stages look the same for every
+     * plant on purpose — what grows out of the pot is the reward for keeping at it.
+     */
+    val speciesRevealed: Boolean get() = ordinal >= SEEDLING.ordinal
 }
 
 fun growthStageFor(elapsedMillis: Long): GrowthStage {

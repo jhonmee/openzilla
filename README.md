@@ -34,6 +34,9 @@ secreto del repositorio y cambiar `assembleDebug` por `assembleRelease` en el fl
   quieras (la lista se desplaza sola al llegar a los bordes).
 - Pantalla de estadísticas generales, con el conjunto de todos tus hábitos: comparativa de
   rachas, recaídas por mes, ahorro acumulado y reparto por tipo.
+- Jardín: cada hábito es una planta que crece con su racha, de semilla a árbol en diez
+  etapas. La especie (roble, pino, palmera, cerezo…) no se descubre hasta que la planta
+  crece. Dibujado con geometría, así que no añade nada al tamaño de la app.
 - Español e inglés, con selector propio en Ajustes (o el idioma del sistema).
 - Navegación con los gestos de Android: las pantallas entran y salen deslizándose, y en
   Android 13 o superior puedes mantener el gesto de volver para ir viendo a dónde regresas y

@@ -9,13 +9,18 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.lerp
+import com.openzilla.app.util.CanopyShape
 import com.openzilla.app.util.GrowthStage
+import com.openzilla.app.util.LeafShape
+import com.openzilla.app.util.PlantSpecies
+import kotlin.math.cos
 import kotlin.math.sin
 
-/** Colours the garden draws with, all taken from the active theme so the accent carries through. */
+/** Colours the garden draws with, all derived from the active theme and the species tint. */
 data class PlantPalette(
     val foliage: Color,
     val foliageDark: Color,
+    val bloom: Color,
     val trunk: Color,
     val pot: Color,
     val potRim: Color,
@@ -23,25 +28,34 @@ data class PlantPalette(
 )
 
 /**
- * Altura de la planta para cada etapa, en fracción del **espacio libre sobre la maceta** (no
+ * Altura de la planta en cada etapa, en fracción del **espacio libre sobre la maceta** (no
  * del alto total). Los topes están puestos para que la copa más grande quepa entera: medido
  * sobre el alto total, un árbol se salía por arriba del recuadro.
  */
-private val STAGE_HEIGHT = floatArrayOf(0.04f, 0.16f, 0.28f, 0.40f, 0.34f, 0.52f, 0.62f)
+private val STAGE_HEIGHT = floatArrayOf(
+    0.04f, 0.14f, 0.22f, 0.30f, 0.38f, 0.44f, 0.48f, 0.52f, 0.58f, 0.64f
+)
+
+/** Cuántas hojas lleva cada etapa antes de que aparezca la copa. */
+private val STAGE_LEAVES = intArrayOf(0, 2, 4, 4, 6, 8, 8, 10, 10, 12)
 
 /**
  * Draws one potted plant.
  *
  * Everything is plain geometry — no bitmaps, no vector assets — which is what keeps the whole
  * garden at zero bytes of APK and lets it recolour itself with the theme. Each plant is at
- * most a dozen draw calls, and [sway] is read straight from the caller's animated value so a
- * frame of the breeze repaints only the canvases, never the layout.
+ * most a couple of dozen draw calls, and [sway] is read straight from the caller's animated
+ * value so a frame of the breeze repaints only the canvases, never the layout.
+ *
+ * While the species is still a secret every plant is drawn the same generic way; the shape
+ * only starts telling them apart once [GrowthStage.speciesRevealed] is true.
  *
  * @param growth 0f..1f inside the current stage, so a plant visibly creeps up before it jumps.
  * @param sway   -1f..1f, the shared breeze.
  */
 fun DrawScope.drawPottedPlant(
     stage: GrowthStage,
+    species: PlantSpecies,
     growth: Float,
     sway: Float,
     palette: PlantPalette
@@ -53,13 +67,11 @@ fun DrawScope.drawPottedPlant(
     // --- Maceta: trapecio + borde, en la parte baja del dibujo ---
     val potTop = h * 0.72f
     val potBottom = h * 0.96f
-    val potTopHalf = w * 0.20f
-    val potBottomHalf = w * 0.14f
     val pot = Path().apply {
-        moveTo(cx - potTopHalf, potTop)
-        lineTo(cx + potTopHalf, potTop)
-        lineTo(cx + potBottomHalf, potBottom)
-        lineTo(cx - potBottomHalf, potBottom)
+        moveTo(cx - w * 0.20f, potTop)
+        lineTo(cx + w * 0.20f, potTop)
+        lineTo(cx + w * 0.14f, potBottom)
+        lineTo(cx - w * 0.14f, potBottom)
         close()
     }
     drawPath(pot, palette.pot)
@@ -76,8 +88,13 @@ fun DrawScope.drawPottedPlant(
         size = Size(w * 0.40f, h * 0.036f)
     )
 
-    // --- Planta ---
     val base = potTop - rimHeight
+    if (stage == GrowthStage.SEED) {
+        drawCircle(palette.foliageDark, radius = w * 0.035f, center = Offset(cx, base - h * 0.012f))
+        return
+    }
+
+    val revealed = stage.speciesRevealed
     val stageHeight = STAGE_HEIGHT[stage.ordinal]
     val nextHeight = STAGE_HEIGHT.getOrElse(stage.ordinal + 1) { stageHeight }
     // Se interpola hacia la etapa siguiente: entre hito e hito la planta sigue subiendo un
@@ -86,80 +103,178 @@ fun DrawScope.drawPottedPlant(
     val topY = base - plantHeight
     val swayX = sway * w * 0.06f * stageHeight
 
-    if (stage == GrowthStage.SEED) {
-        drawCircle(palette.foliageDark, radius = w * 0.035f, center = Offset(cx, base - h * 0.012f))
-        return
+    val hasCanopy = revealed && species.canopy != CanopyShape.NONE && stage >= GrowthStage.SAPLING
+    val trunkWidth = when {
+        hasCanopy && stage == GrowthStage.TREE -> w * 0.075f
+        hasCanopy -> w * 0.055f
+        stage >= GrowthStage.MATURE -> w * 0.032f
+        else -> w * 0.022f
     }
 
-    val trunkWidth = when (stage) {
-        GrowthStage.SPROUT, GrowthStage.SEEDLING -> w * 0.022f
-        GrowthStage.PLANT, GrowthStage.BUSH -> w * 0.032f
-        GrowthStage.SAPLING -> w * 0.055f
-        else -> w * 0.075f
-    }
     val stem = Path().apply {
         moveTo(cx, base)
         quadraticBezierTo(cx + swayX * 0.35f, base - plantHeight * 0.55f, cx + swayX, topY)
     }
     drawPath(
         stem,
-        color = if (stage >= GrowthStage.SAPLING) palette.trunk else palette.foliageDark,
+        color = if (hasCanopy) palette.trunk else palette.foliageDark,
         style = Stroke(width = trunkWidth, cap = StrokeCap.Round)
     )
 
-    when (stage) {
-        GrowthStage.SPROUT, GrowthStage.SEEDLING, GrowthStage.PLANT -> {
-            val leaves = when (stage) {
-                GrowthStage.SPROUT -> 2
-                GrowthStage.SEEDLING -> 4
-                else -> 6
-            }
-            val leafLength = w * (0.13f + 0.025f * stage.ordinal)
-            repeat(leaves) { index ->
-                val t = (index + 1f) / (leaves + 1f)
-                val y = base - plantHeight * t
-                val x = cx + swayX * t
-                val toRight = index % 2 == 0
-                rotate(degrees = if (toRight) -35f else 35f, pivot = Offset(x, y)) {
-                    drawOval(
-                        color = if (index % 2 == 0) palette.foliage else palette.foliageDark,
-                        topLeft = Offset(if (toRight) x else x - leafLength, y - leafLength * 0.26f),
-                        size = Size(leafLength, leafLength * 0.52f)
-                    )
-                }
-            }
-        }
-
-        GrowthStage.BUSH, GrowthStage.SAPLING, GrowthStage.TREE -> {
-            val canopy = when (stage) {
-                GrowthStage.BUSH -> w * 0.17f
-                GrowthStage.SAPLING -> w * 0.19f
-                else -> w * 0.24f
-            }
-            val top = Offset(cx + swayX, topY)
-            // Tres o cinco círculos solapados: es lo más barato que sigue leyéndose como copa.
-            drawCircle(palette.foliageDark, canopy, Offset(top.x - canopy * 0.62f, top.y + canopy * 0.45f))
-            drawCircle(palette.foliageDark, canopy, Offset(top.x + canopy * 0.62f, top.y + canopy * 0.45f))
-            drawCircle(palette.foliage, canopy * 1.1f, Offset(top.x, top.y + canopy * 0.15f))
-            if (stage == GrowthStage.TREE) {
-                drawCircle(palette.foliage, canopy * 0.75f, Offset(top.x - canopy * 0.9f, top.y - canopy * 0.15f))
-                drawCircle(palette.foliage, canopy * 0.75f, Offset(top.x + canopy * 0.9f, top.y - canopy * 0.15f))
-            }
-        }
-
-        GrowthStage.SEED -> Unit
+    val top = Offset(cx + swayX, topY)
+    if (hasCanopy) {
+        drawCanopy(species, top, w * 0.22f * species.canopyScale, palette)
+    } else {
+        val leafShape = if (revealed) species.leaf else LeafShape.OVAL
+        val count = (STAGE_LEAVES[stage.ordinal] * if (revealed) species.leafiness else 1f).toInt().coerceAtLeast(2)
+        drawLeaves(leafShape, count, cx, base, plantHeight, swayX, w, palette)
     }
+
+    // --- Capullos y flores ---
+    if (revealed && species.flowers && stage >= GrowthStage.BUDDING) {
+        val bloomed = stage >= GrowthStage.FLOWERING
+        val radius = w * (if (bloomed) 0.045f else 0.028f)
+        val spots = if (bloomed) 5 else 3
+        repeat(spots) { index ->
+            val t = 0.45f + 0.5f * index / spots
+            val y = base - plantHeight * t
+            val x = cx + swayX * t + (if (index % 2 == 0) 1f else -1f) * w * 0.12f
+            if (bloomed) drawFlower(Offset(x, y), radius, palette) else drawCircle(palette.bloom, radius, Offset(x, y))
+        }
+    }
+}
+
+private fun DrawScope.drawLeaves(
+    shape: LeafShape,
+    count: Int,
+    cx: Float,
+    base: Float,
+    plantHeight: Float,
+    swayX: Float,
+    w: Float,
+    palette: PlantPalette
+) {
+    val length = when (shape) {
+        LeafShape.OVAL -> w * 0.17f
+        LeafShape.ROUND -> w * 0.13f
+        LeafShape.NEEDLE -> w * 0.20f
+    }
+    val thickness = when (shape) {
+        LeafShape.OVAL -> 0.52f
+        LeafShape.ROUND -> 0.95f
+        LeafShape.NEEDLE -> 0.22f
+    }
+    repeat(count) { index ->
+        val t = (index + 1f) / (count + 1f)
+        val y = base - plantHeight * t
+        val x = cx + swayX * t
+        val toRight = index % 2 == 0
+        rotate(degrees = if (toRight) -35f else 35f, pivot = Offset(x, y)) {
+            drawOval(
+                color = if (toRight) palette.foliage else palette.foliageDark,
+                topLeft = Offset(if (toRight) x else x - length, y - length * thickness / 2f),
+                size = Size(length, length * thickness)
+            )
+        }
+    }
+}
+
+private fun DrawScope.drawCanopy(species: PlantSpecies, top: Offset, radius: Float, palette: PlantPalette) {
+    when (species.canopy) {
+        CanopyShape.CONE -> {
+            // Pino: tres triángulos apilados, el de abajo más ancho.
+            repeat(3) { level ->
+                val scale = 1f - level * 0.22f
+                val halfWidth = radius * 1.15f * scale
+                val height = radius * 1.1f
+                val centerY = top.y + radius * 0.75f - level * height * 0.55f
+                val cone = Path().apply {
+                    moveTo(top.x, centerY - height)
+                    lineTo(top.x + halfWidth, centerY)
+                    lineTo(top.x - halfWidth, centerY)
+                    close()
+                }
+                drawPath(cone, if (level % 2 == 0) palette.foliageDark else palette.foliage)
+            }
+        }
+
+        CanopyShape.FAN -> {
+            // Palmera: hojas largas saliendo en abanico desde la punta del tronco.
+            repeat(6) { index ->
+                // Todas hacia arriba: con angulos positivos apuntaban hacia abajo y la copa
+                // parecia un asterisco en vez de una palmera.
+                val angle = Math.toRadians((-165.0 + index * 30.0)).toFloat()
+                val length = radius * 1.5f
+                val end = Offset(top.x + cos(angle) * length, top.y + sin(angle) * length * 0.7f)
+                drawLine(
+                    color = if (index % 2 == 0) palette.foliage else palette.foliageDark,
+                    start = top,
+                    end = end,
+                    strokeWidth = radius * 0.34f,
+                    cap = StrokeCap.Round
+                )
+            }
+        }
+
+        else -> {
+            // Copa redonda: círculos solapados, lo más barato que sigue leyéndose como copa.
+            drawCircle(palette.foliageDark, radius, Offset(top.x - radius * 0.62f, top.y + radius * 0.45f))
+            drawCircle(palette.foliageDark, radius, Offset(top.x + radius * 0.62f, top.y + radius * 0.45f))
+            drawCircle(palette.foliage, radius * 1.1f, Offset(top.x, top.y + radius * 0.15f))
+            drawCircle(palette.foliage, radius * 0.75f, Offset(top.x - radius * 0.9f, top.y - radius * 0.15f))
+            drawCircle(palette.foliage, radius * 0.75f, Offset(top.x + radius * 0.9f, top.y - radius * 0.15f))
+        }
+    }
+}
+
+/** Cinco pétalos y un centro: suficiente para que se lea como flor a este tamaño. */
+private fun DrawScope.drawFlower(center: Offset, radius: Float, palette: PlantPalette) {
+    repeat(5) { index ->
+        val angle = (Math.PI * 2 * index / 5).toFloat()
+        val petal = Offset(center.x + cos(angle) * radius * 0.7f, center.y + sin(angle) * radius * 0.7f)
+        drawCircle(palette.bloom, radius * 0.55f, petal)
+    }
+    drawCircle(lerp(palette.bloom, Color.White, 0.55f), radius * 0.4f, center)
 }
 
 /** Breeze offset for one plant: same wave for everyone, desfasada por su posición. */
 fun swayFor(phase: Float, index: Int): Float = sin(phase + index * 0.7f)
 
-/** Builds the palette from two theme colours, so light and dark both stay readable. */
-fun plantPalette(primary: Color, surfaceVariant: Color, outline: Color, onSurfaceVariant: Color) = PlantPalette(
-    foliage = primary,
-    foliageDark = lerp(primary, Color.Black, 0.28f),
-    trunk = lerp(onSurfaceVariant, Color.Black, 0.25f),
-    pot = lerp(outline, Color.Black, 0.10f),
-    potRim = outline,
-    soil = lerp(surfaceVariant, Color.Black, 0.35f)
-)
+/** Verde genérico mientras la especie sigue siendo un secreto. */
+private val UNKNOWN_TINT = Color(0xFF4C8B3F)
+
+/** Marrón de tronco y tierra; no se saca del tema porque un tronco gris no lee como tronco. */
+private val WOOD = Color(0xFF6B4A2F)
+
+/**
+ * Cuánto del acento entra en la hoja.
+ *
+ * Poco, y por un motivo concreto: mezclar a partes iguales un verde y un acento cálido no da
+ * un verde cálido, da un marrón sucio — con el coral por defecto el jardín entero salía
+ * embarrado. Con este peso la hoja sigue siendo verde y el acento se nota; donde sí manda es
+ * en la maceta y en las flores, que aceptan cualquier color sin dejar de leerse.
+ */
+private const val ACCENT_IN_FOLIAGE = 0.18f
+
+fun plantPalette(
+    species: PlantSpecies,
+    revealed: Boolean,
+    darkTheme: Boolean,
+    primary: Color,
+    surfaceVariant: Color,
+    outline: Color
+): PlantPalette {
+    val green = if (revealed) Color(species.tint) else UNKNOWN_TINT
+    val tinted = lerp(green, primary, ACCENT_IN_FOLIAGE)
+    // En oscuro los verdes se apagan contra el fondo negro, así que suben un poco.
+    val foliage = if (darkTheme) lerp(tinted, Color.White, 0.14f) else tinted
+    return PlantPalette(
+        foliage = foliage,
+        foliageDark = lerp(foliage, Color.Black, 0.26f),
+        bloom = lerp(Color(species.bloomTint), primary, 0.35f),
+        trunk = lerp(WOOD, primary, 0.12f),
+        pot = lerp(outline, primary, 0.25f),
+        potRim = lerp(outline, primary, 0.12f),
+        soil = lerp(surfaceVariant, Color.Black, 0.42f)
+    )
+}

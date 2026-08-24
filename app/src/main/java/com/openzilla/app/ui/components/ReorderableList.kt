@@ -19,20 +19,29 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import kotlin.math.abs
 
 /** Cuánto se agranda el elemento levantado. */
 private const val LIFT_SCALE = 1.03f
 
 /** Franja junto a cada borde donde la lista empieza a desplazarse sola. */
-private val AUTO_SCROLL_ZONE = 72.dp
+private val AUTO_SCROLL_ZONE = 56.dp
+
+/** Velocidad máxima del autoscroll, en dp por segundo. */
+private val AUTO_SCROLL_MAX_SPEED = 320.dp
+
+/** Hay que arrastrar al menos esto para que el autoscroll entre en juego. */
+private val AUTO_SCROLL_ACTIVATION = 8.dp
 
 /**
- * Velocidad máxima del autoscroll, en dp **por segundo**.
+ * Tiempo mínimo entre dos intercambios.
  *
- * Por segundo y no por fotograma: medido por fotograma, la lista corría al doble en un móvil
- * de 120 Hz que en uno de 60, y se volvía irregular en cuanto el dispositivo bajaba de tasa.
+ * Los vecinos animan su hueco al apartarse, así que mientras dura esa animación la lista
+ * informa de posiciones intermedias. Sin esta pausa, esas posiciones a medio camino
+ * disparaban el intercambio siguiente, ese volvía a mover a los vecinos, y salía una cascada
+ * hasta el final de la lista o un temblor cuando dos intercambios se peleaban entre sí.
  */
-private val AUTO_SCROLL_MAX_SPEED = 900.dp
+private const val SWAP_COOLDOWN_MILLIS = 110L
 
 /**
  * Drag-and-drop reordering for a `LazyColumn`, small enough to keep in the project rather
@@ -47,6 +56,7 @@ class ReorderState internal constructor(
     private val listState: LazyListState,
     private val autoScrollZonePx: Float,
     private val autoScrollMaxSpeedPx: Float,
+    private val autoScrollActivationPx: Float,
     private val onMove: (from: Int, to: Int) -> Unit,
     private val onDropped: () -> Unit,
     private val onLifted: () -> Unit,
@@ -58,6 +68,8 @@ class ReorderState internal constructor(
     private var draggingIndex by mutableIntStateOf(-1)
     private var floatingCenterY by mutableFloatStateOf(0f)
     private var draggingHeight by mutableIntStateOf(0)
+    private var draggedDistance = 0f
+    private var lastSwapAt = 0L
 
     /**
      * A tap is delivered on the same finger-up that ends a drag, so a plain click guard is
@@ -67,26 +79,39 @@ class ReorderState internal constructor(
     fun shouldIgnoreClick(): Boolean =
         draggingKey != null || System.currentTimeMillis() - lastDropAt < 300L
 
+    /**
+     * Where the items actually live, in the same coordinates as `LazyListItemInfo.offset`.
+     *
+     * Not the raw viewport values: those include the list's content padding, so measuring the
+     * edge zones against them left the top zone above the first card. The list then refused
+     * to scroll up while the card sat pinned against the top.
+     */
+    private val contentStart: Float
+        get() = (listState.layoutInfo.viewportStartOffset + listState.layoutInfo.beforeContentPadding).toFloat()
+
+    private val contentEnd: Float
+        get() = (listState.layoutInfo.viewportEndOffset - listState.layoutInfo.afterContentPadding).toFloat()
+
     internal fun start(key: Any) {
         val info = listState.layoutInfo.visibleItemsInfo.firstOrNull { it.key == key } ?: return
         draggingKey = key
         draggingIndex = info.index
         draggingHeight = info.size
         floatingCenterY = info.offset + info.size / 2f
+        draggedDistance = 0f
+        lastSwapAt = 0L
         onLifted()
     }
 
     internal fun drag(deltaY: Float) {
         if (draggingKey == null) return
-        // La tarjeta se queda siempre dentro de la parte visible. Sin este tope, seguir
-        // arrastrando más allá del borde acumulaba distancia invisible: al volver hacia
-        // dentro no reaccionaba hasta recuperar todo lo acumulado, y el autoscroll se
-        // quedaba clavado a tope contra un extremo.
-        val info = listState.layoutInfo
+        draggedDistance += abs(deltaY)
         val half = draggingHeight / 2f
-        val lowest = info.viewportStartOffset + half
-        val highest = info.viewportEndOffset - half
+        val lowest = contentStart + half
+        val highest = contentEnd - half
         val moved = floatingCenterY + deltaY
+        // El tope evita acumular recorrido invisible fuera de la pantalla: sin él, arrastrar
+        // más allá del borde y volver no reaccionaba hasta recuperar todo lo acumulado.
         floatingCenterY = if (lowest <= highest) moved.coerceIn(lowest, highest) else moved
         swapIfNeeded()
     }
@@ -95,6 +120,7 @@ class ReorderState internal constructor(
         if (draggingKey == null) return
         draggingKey = null
         draggingIndex = -1
+        draggedDistance = 0f
         lastDropAt = System.currentTimeMillis()
         onDropped()
     }
@@ -106,34 +132,59 @@ class ReorderState internal constructor(
         return floatingCenterY - (info.offset + info.size / 2f)
     }
 
+    /**
+     * Moves the card at most one position, and only once the finger has gone past the middle
+     * of the neighbour it is displacing.
+     *
+     * Both limits matter. One neighbour at a time keeps the movement monotonic — it cannot
+     * skip half the list in a single frame — and the halfway rule gives it hysteresis: right
+     * after a swap that neighbour sits on the other side, so the condition that triggered it
+     * is no longer true and it cannot bounce straight back.
+     */
     private fun swapIfNeeded() {
         val from = draggingIndex
         if (from < 0) return
-        val target = listState.layoutInfo.visibleItemsInfo.firstOrNull { item ->
-            item.index != from && floatingCenterY >= item.offset && floatingCenterY <= item.offset + item.size
-        } ?: return
-        onMove(from, target.index)
-        draggingIndex = target.index
+        val now = System.currentTimeMillis()
+        if (now - lastSwapAt < SWAP_COOLDOWN_MILLIS) return
+
+        val items = listState.layoutInfo.visibleItemsInfo
+        val next = items.firstOrNull { it.index == from + 1 }
+        val previous = items.firstOrNull { it.index == from - 1 }
+        val target = when {
+            next != null && floatingCenterY > next.offset + next.size / 2f -> from + 1
+            previous != null && floatingCenterY < previous.offset + previous.size / 2f -> from - 1
+            else -> return
+        }
+
+        lastSwapAt = now
+        onMove(from, target)
+        draggingIndex = target
         onSwapped()
     }
 
-/**
-     * Scroll speed in pixels per second, or 0 when the card is comfortably inside the
-     * viewport. It grows with how far into the edge zone the card has been pushed, which
-     * makes short corrections easy and long journeys quick.
+    /**
+     * Scroll speed in pixels per second, or 0 when there is no reason to scroll: the card is
+     * comfortably inside the viewport, the finger has barely moved, or the list has nothing
+     * left to give in that direction.
      */
     private fun autoScrollVelocity(): Float {
         if (draggingKey == null) return 0f
-        val info = listState.layoutInfo
-        val top = floatingCenterY - draggingHeight / 2f
-        val bottom = floatingCenterY + draggingHeight / 2f
-        val start = info.viewportStartOffset.toFloat()
-        val end = info.viewportEndOffset.toFloat()
+        // Levantar una tarjeta que ya estaba pegada a un borde no debe ponerse a desplazar
+        // sola: hace falta que el dedo se haya movido de verdad.
+        if (draggedDistance < autoScrollActivationPx) return 0f
+
+        val half = draggingHeight / 2f
+        val top = floatingCenterY - half
+        val bottom = floatingCenterY + half
+        val start = contentStart
+        val end = contentEnd
         return when {
-            bottom > end - autoScrollZonePx ->
-                (((bottom - (end - autoScrollZonePx)) / autoScrollZonePx).coerceAtMost(1f)) * autoScrollMaxSpeedPx
-            top < start + autoScrollZonePx ->
-                -(((start + autoScrollZonePx - top) / autoScrollZonePx).coerceAtMost(1f)) * autoScrollMaxSpeedPx
+            // canScrollForward/Backward evitan seguir empujando contra un extremo, que era de
+            // donde salía el temblor al llegar arriba del todo.
+            bottom > end - autoScrollZonePx && listState.canScrollForward ->
+                ((bottom - (end - autoScrollZonePx)) / autoScrollZonePx).coerceAtMost(1f) * autoScrollMaxSpeedPx
+            top < start + autoScrollZonePx && listState.canScrollBackward ->
+                -((start + autoScrollZonePx - top) / autoScrollZonePx).coerceAtMost(1f) * autoScrollMaxSpeedPx
             else -> 0f
         }
     }
@@ -144,16 +195,15 @@ class ReorderState internal constructor(
             var step = 0f
             withFrameNanos { frame ->
                 if (previousFrame != 0L) {
-                    // Se recorta el intervalo: si el hilo se atranca un momento, al
-                    // recuperarse no debe pegar un salto proporcional a lo que tardó.
+                    // Por segundo y no por fotograma: medido por fotograma, la lista corría al
+                    // doble en un móvil de 120 Hz. Se recorta el intervalo para que un atasco
+                    // puntual no dé un tirón al recuperarse.
                     val seconds = ((frame - previousFrame) / 1_000_000_000f).coerceIn(0f, 0.05f)
                     step = autoScrollVelocity() * seconds
                 }
                 previousFrame = frame
             }
             if (step != 0f) {
-                // scrollBy devuelve lo que realmente se pudo desplazar: al llegar al final de
-                // la lista devuelve 0 y el bucle se queda quieto en vez de forcejear.
                 listState.scrollBy(step)
                 swapIfNeeded()
             }
@@ -177,12 +227,14 @@ fun rememberReorderState(
     val density = LocalDensity.current
     val zonePx = with(density) { AUTO_SCROLL_ZONE.toPx() }
     val speedPx = with(density) { AUTO_SCROLL_MAX_SPEED.toPx() }
+    val activationPx = with(density) { AUTO_SCROLL_ACTIVATION.toPx() }
 
-    val state = remember(listState, zonePx, speedPx) {
+    val state = remember(listState, zonePx, speedPx, activationPx) {
         ReorderState(
             listState = listState,
             autoScrollZonePx = zonePx,
             autoScrollMaxSpeedPx = speedPx,
+            autoScrollActivationPx = activationPx,
             onMove = { from, to -> move(from, to) },
             onDropped = { dropped() },
             onLifted = { lifted() },

@@ -1,6 +1,7 @@
 package com.openzilla.app.util
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -22,17 +23,20 @@ class GrowthStageTest {
     @Test
     fun `cada umbral cambia de etapa justo al cumplirse`() {
         assertEquals(GrowthStage.SPROUT, growthStageFor(6 * hour))
-        assertEquals(GrowthStage.SEEDLING, growthStageFor(day))
-        assertEquals(GrowthStage.PLANT, growthStageFor(3 * day))
-        assertEquals(GrowthStage.BUSH, growthStageFor(7 * day))
-        assertEquals(GrowthStage.SAPLING, growthStageFor(30 * day))
+        assertEquals(GrowthStage.SEEDLING, growthStageFor(12 * hour))
+        assertEquals(GrowthStage.YOUNG, growthStageFor(day))
+        assertEquals(GrowthStage.GROWING, growthStageFor(3 * day))
+        assertEquals(GrowthStage.MATURE, growthStageFor(7 * day))
+        assertEquals(GrowthStage.BUDDING, growthStageFor(14 * day))
+        assertEquals(GrowthStage.FLOWERING, growthStageFor(30 * day))
+        assertEquals(GrowthStage.SAPLING, growthStageFor(90 * day))
         assertEquals(GrowthStage.TREE, growthStageFor(365 * day))
     }
 
     @Test
     fun `justo antes de un umbral se sigue en la etapa anterior`() {
         assertEquals(GrowthStage.SEED, growthStageFor(6 * hour - 1))
-        assertEquals(GrowthStage.SEEDLING, growthStageFor(3 * day - 1))
+        assertEquals(GrowthStage.YOUNG, growthStageFor(3 * day - 1))
         assertEquals(GrowthStage.SAPLING, growthStageFor(365 * day - 1))
     }
 
@@ -50,8 +54,23 @@ class GrowthStageTest {
     @Test
     fun `el progreso dentro de una etapa va de cero a uno`() {
         assertEquals(0f, GrowthStage.SPROUT.progressWithin(6 * hour), 0.001f)
-        assertEquals(1f, GrowthStage.SPROUT.progressWithin(day), 0.001f)
-        val mid = GrowthStage.SPROUT.progressWithin(15 * hour)
+        assertEquals(1f, GrowthStage.SPROUT.progressWithin(12 * hour), 0.001f)
+        val mid = GrowthStage.SPROUT.progressWithin(9 * hour)
         assertTrue("esperaba un valor intermedio, fue $mid", mid > 0.4f && mid < 0.6f)
+    }
+
+    @Test
+    fun `la especie no se descubre hasta la plántula`() {
+        assertFalse(GrowthStage.SEED.speciesRevealed)
+        assertFalse(GrowthStage.SPROUT.speciesRevealed)
+        assertTrue(GrowthStage.SEEDLING.speciesRevealed)
+        assertTrue(GrowthStage.TREE.speciesRevealed)
+    }
+
+    @Test
+    fun `las etapas están ordenadas por tiempo`() {
+        val hours = GrowthStage.entries.map { it.minHours }
+        assertEquals(hours.sorted(), hours)
+        assertEquals(10, GrowthStage.entries.size)
     }
 }

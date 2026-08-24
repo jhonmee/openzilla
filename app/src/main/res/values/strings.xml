@@ -50,10 +50,29 @@
     <string name="stage_seed">Semilla</string>
     <string name="stage_sprout">Brote</string>
     <string name="stage_seedling">Plántula</string>
+    <string name="stage_young">Planta joven</string>
+    <string name="stage_growing">En crecimiento</string>
+    <string name="stage_mature">Planta madura</string>
+    <string name="stage_budding">Con capullos</string>
+    <string name="stage_flowering">En flor</string>
     <string name="stage_plant">Planta</string>
     <string name="stage_bush">Arbusto</string>
     <string name="stage_sapling">Árbol joven</string>
     <string name="stage_tree">Árbol</string>
+
+    <!-- Especies del jardín -->
+    <string name="species_unknown">Semilla sorpresa</string>
+    <string name="species_oak">Roble</string>
+    <string name="species_pine">Pino</string>
+    <string name="species_palm">Palmera</string>
+    <string name="species_bamboo">Bambú</string>
+    <string name="species_cherry">Cerezo</string>
+    <string name="species_olive">Olivo</string>
+    <string name="species_fern">Helecho</string>
+    <string name="species_lavender">Lavanda</string>
+    <string name="species_succulent">Suculenta</string>
+    <string name="species_sunflower">Girasol</string>
+    <string name="garden_species_stage">%1$s · %2$s</string>
     <string name="delete_habit_title">Eliminar \"%1$s\"</string>
     <string name="delete_habit_message">Se borrará este hábito y todo su historial de forma permanente. Esta acción no se puede deshacer.</string>
 

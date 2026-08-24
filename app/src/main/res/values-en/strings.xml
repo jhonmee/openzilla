@@ -47,10 +47,29 @@
     <string name="stage_seed">Seed</string>
     <string name="stage_sprout">Sprout</string>
     <string name="stage_seedling">Seedling</string>
+    <string name="stage_young">Young plant</string>
+    <string name="stage_growing">Growing</string>
+    <string name="stage_mature">Mature plant</string>
+    <string name="stage_budding">Budding</string>
+    <string name="stage_flowering">In bloom</string>
     <string name="stage_plant">Plant</string>
     <string name="stage_bush">Bush</string>
     <string name="stage_sapling">Young tree</string>
     <string name="stage_tree">Tree</string>
+
+    <!-- Garden species -->
+    <string name="species_unknown">Surprise seed</string>
+    <string name="species_oak">Oak</string>
+    <string name="species_pine">Pine</string>
+    <string name="species_palm">Palm</string>
+    <string name="species_bamboo">Bamboo</string>
+    <string name="species_cherry">Cherry tree</string>
+    <string name="species_olive">Olive tree</string>
+    <string name="species_fern">Fern</string>
+    <string name="species_lavender">Lavender</string>
+    <string name="species_succulent">Succulent</string>
+    <string name="species_sunflower">Sunflower</string>
+    <string name="garden_species_stage">%1$s · %2$s</string>
     <string name="delete_habit_title">Delete \"%1$s\"</string>
     <string name="delete_habit_message">This habit and its whole history will be permanently deleted. This cannot be undone.</string>
 

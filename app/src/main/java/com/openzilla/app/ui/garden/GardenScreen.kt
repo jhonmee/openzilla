@@ -34,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -46,6 +47,7 @@ import com.openzilla.app.ui.components.rememberNowTicker
 import com.openzilla.app.ui.rememberHaptics
 import com.openzilla.app.ui.rememberOpenZillaViewModel
 import com.openzilla.app.util.formatDurationShort
+import com.openzilla.app.util.PlantSpecies
 import com.openzilla.app.util.growthStageFor
 
 /** Un ciclo entero de brisa. Lento a propósito: se nota vivo sin llamar la atención. */
@@ -154,10 +156,15 @@ private fun PotCell(
     val elapsed = (nowState.value - habit.startedAt).coerceAtLeast(0)
     val stage = growthStageFor(elapsed)
     val growth = stage.progressWithin(elapsed)
+    // La especie sale del id, no de la base de datos: no hace falta columna ni migración y
+    // sigue siendo la misma después de cerrar la app.
+    val species = remember(habit.id) { PlantSpecies.forHabit(habit.id) }
+    val revealed = stage.speciesRevealed
 
     val scheme = MaterialTheme.colorScheme
-    val palette = remember(scheme.primary, scheme.surfaceVariant, scheme.outline, scheme.onSurfaceVariant) {
-        plantPalette(scheme.primary, scheme.surfaceVariant, scheme.outline, scheme.onSurfaceVariant)
+    val darkTheme = scheme.background.luminance() < 0.5f
+    val palette = remember(species, revealed, darkTheme, scheme.primary, scheme.surfaceVariant, scheme.outline) {
+        plantPalette(species, revealed, darkTheme, scheme.primary, scheme.surfaceVariant, scheme.outline)
     }
 
     Column(
@@ -172,6 +179,7 @@ private fun PotCell(
             // La brisa se lee aquí dentro: un fotograma repinta este lienzo y nada más.
             drawPottedPlant(
                 stage = stage,
+                species = species,
                 growth = growth,
                 sway = swayFor(breeze.value, index),
                 palette = palette
@@ -194,11 +202,16 @@ private fun PotCell(
             modifier = Modifier.fillMaxWidth()
         )
         Text(
-            stringResource(stage.labelRes),
+            // Hasta que crece no se sabe qué es: el nombre de la especie es parte del premio.
+            if (revealed) {
+                stringResource(R.string.garden_species_stage, stringResource(species.nameRes), stringResource(stage.labelRes))
+            } else {
+                stringResource(R.string.species_unknown)
+            },
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
-            maxLines = 1,
+            maxLines = 2,
             modifier = Modifier.fillMaxWidth()
         )
     }
