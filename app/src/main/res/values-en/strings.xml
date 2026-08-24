@@ -31,6 +31,26 @@
     <string name="home_since">Clean for %1$s</string>
     <string name="home_goal">Goal: %1$s</string>
     <string name="home_reset_counter">Reset counter</string>
+    <string name="home_garden">Garden</string>
+    <string name="select_action">Select</string>
+    <string name="select_all">Select all</string>
+    <string name="selection_count">%1$d selected</string>
+    <string name="selection_exit">Leave selection</string>
+    <string name="selection_delete_title">Delete %1$d habits</string>
+    <string name="selection_delete_message">The selected habits and their whole history will be permanently deleted. This cannot be undone.</string>
+
+    <!-- Garden -->
+    <string name="garden_title">Your garden</string>
+    <string name="garden_empty">Once you add habits, you will watch them grow here.</string>
+    <string name="garden_hint">Each plant grows with the time you have gone without relapsing. Tap one to open its habit.</string>
+    <string name="garden_summary">%1$d plants · %2$s of care</string>
+    <string name="stage_seed">Seed</string>
+    <string name="stage_sprout">Sprout</string>
+    <string name="stage_seedling">Seedling</string>
+    <string name="stage_plant">Plant</string>
+    <string name="stage_bush">Bush</string>
+    <string name="stage_sapling">Young tree</string>
+    <string name="stage_tree">Tree</string>
     <string name="delete_habit_title">Delete \"%1$s\"</string>
     <string name="delete_habit_message">This habit and its whole history will be permanently deleted. This cannot be undone.</string>
 

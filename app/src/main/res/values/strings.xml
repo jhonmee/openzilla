@@ -34,6 +34,26 @@
     <string name="home_since">Sin recaídas desde hace %1$s</string>
     <string name="home_goal">Meta: %1$s</string>
     <string name="home_reset_counter">Reiniciar contador</string>
+    <string name="home_garden">Jardín</string>
+    <string name="select_action">Seleccionar</string>
+    <string name="select_all">Seleccionar todos</string>
+    <string name="selection_count">%1$d seleccionados</string>
+    <string name="selection_exit">Salir de la selección</string>
+    <string name="selection_delete_title">Eliminar %1$d hábitos</string>
+    <string name="selection_delete_message">Se borrarán los hábitos seleccionados y todo su historial de forma permanente. Esta acción no se puede deshacer.</string>
+
+    <!-- Jardín -->
+    <string name="garden_title">Tu jardín</string>
+    <string name="garden_empty">Cuando añadas hábitos, aquí verás cómo crecen.</string>
+    <string name="garden_hint">Cada planta crece con el tiempo que llevas sin recaer. Toca una para abrir su hábito.</string>
+    <string name="garden_summary">%1$d plantas · %2$s de cuidados</string>
+    <string name="stage_seed">Semilla</string>
+    <string name="stage_sprout">Brote</string>
+    <string name="stage_seedling">Plántula</string>
+    <string name="stage_plant">Planta</string>
+    <string name="stage_bush">Arbusto</string>
+    <string name="stage_sapling">Árbol joven</string>
+    <string name="stage_tree">Árbol</string>
     <string name="delete_habit_title">Eliminar \"%1$s\"</string>
     <string name="delete_habit_message">Se borrará este hábito y todo su historial de forma permanente. Esta acción no se puede deshacer.</string>
 

@@ -57,6 +57,11 @@ class HabitRepository(context: Context) {
 
     suspend fun deleteHabit(habit: HabitEntity): Result<Unit> = runCatching { habitDao.delete(habit) }
 
+    /** Irreversible, igual que el borrado individual: quien llama ya ha pedido confirmación. */
+    suspend fun deleteHabits(ids: Collection<Long>): Result<Unit> = runCatching {
+        if (ids.isNotEmpty()) habitDao.deleteByIds(ids.toList())
+    }
+
     /** Records the finished streak in history, then starts a fresh one — atomically. */
     suspend fun resetHabit(habit: HabitEntity, resetAt: Long, note: String? = null): Result<Unit> = runCatching {
         db.withTransaction {

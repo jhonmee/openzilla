@@ -15,6 +15,7 @@ import androidx.navigation.navArgument
 import com.openzilla.app.data.AppSettings
 import com.openzilla.app.ui.addhabit.AddHabitScreen
 import com.openzilla.app.ui.detail.HabitDetailScreen
+import com.openzilla.app.ui.garden.GardenScreen
 import com.openzilla.app.ui.home.HomeScreen
 import com.openzilla.app.ui.settings.SettingsScreen
 import com.openzilla.app.ui.stats.GlobalStatsScreen
@@ -25,6 +26,7 @@ private object Routes {
     const val DETAIL = "detail/{habitId}"
     const val SETTINGS = "settings"
     const val STATS = "stats"
+    const val GARDEN = "garden"
     fun addHabit(habitId: Long? = null) = if (habitId == null) "add_habit" else "add_habit?habitId=$habitId"
     fun detail(habitId: Long) = "detail/$habitId"
 }
@@ -66,6 +68,7 @@ fun OpenZillaNavHost(settings: AppSettings) {
             HomeScreen(
                 onAddHabit = { navController.navigate(Routes.addHabit()) },
                 onOpenHabit = { id -> navController.navigate(Routes.detail(id)) },
+                onOpenGarden = { navController.navigate(Routes.GARDEN) },
                 onOpenStats = { navController.navigate(Routes.STATS) },
                 onOpenSettings = { navController.navigate(Routes.SETTINGS) }
             )
@@ -92,6 +95,12 @@ fun OpenZillaNavHost(settings: AppSettings) {
                 onBack = { navController.popBackStack() },
                 onEdit = { id -> navController.navigate(Routes.addHabit(id)) },
                 onDeleted = { navController.popBackStack() }
+            )
+        }
+        composable(Routes.GARDEN) {
+            GardenScreen(
+                onOpenHabit = { id -> navController.navigate(Routes.detail(id)) },
+                onBack = { navController.popBackStack() }
             )
         }
         composable(Routes.STATS) {

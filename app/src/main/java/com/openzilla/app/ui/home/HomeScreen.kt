@@ -1,5 +1,6 @@
 package com.openzilla.app.ui.home
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,11 +15,16 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Park
 import androidx.compose.material.icons.filled.QueryStats
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,6 +35,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
@@ -62,12 +69,14 @@ import com.openzilla.app.util.goalProgress
 fun HomeScreen(
     onAddHabit: () -> Unit,
     onOpenHabit: (Long) -> Unit,
+    onOpenGarden: () -> Unit,
     onOpenStats: () -> Unit,
     onOpenSettings: () -> Unit
 ) {
     val viewModel = rememberOpenZillaViewModel { HomeViewModel(it, it.repository) }
     val habits by viewModel.habits.collectAsStateWithLifecycle()
     var pendingDelete by remember { mutableStateOf<HabitEntity?>(null) }
+    var confirmDeleteSelected by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
 
     val haptics = rememberHaptics()
@@ -77,6 +86,11 @@ fun HomeScreen(
     // State sin leerlo aquí: quien lo lee es cada tarjeta, así el tic de cada segundo
     // recompone las tarjetas y no toda la pantalla.
     val nowState = rememberNowTicker()
+
+    // Selección múltiple. Es un modo aparte a propósito: mientras está activo, arrastrar
+    // queda desactivado, así los dos gestos nunca compiten por la misma pulsación larga.
+    var selected by remember { mutableStateOf<Set<Long>>(emptySet()) }
+    val selectionMode = selected.isNotEmpty()
 
     // Copia local sobre la que se reordena en vivo. Mientras se arrastra no se pisa con lo
     // que llega de la base de datos; al soltar se guarda y la base de datos vuelve a mandar.
@@ -98,29 +112,67 @@ fun HomeScreen(
         if (reorderState.draggingKey == null) ordered = habits
     }
 
+    // Un hábito borrado desde otro sitio no debe quedarse marcado en la selección.
+    LaunchedEffect(habits) {
+        val alive = habits?.map { it.id }?.toSet() ?: return@LaunchedEffect
+        if (selected.isNotEmpty()) selected = selected intersect alive
+    }
+
+    BackHandler(enabled = selectionMode) { selected = emptySet() }
+
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.app_name)) },
-                actions = {
-                    IconButton(onClick = { haptics.tap(); onOpenStats() }) {
-                        Icon(Icons.Filled.QueryStats, contentDescription = stringResource(R.string.home_stats))
+            if (selectionMode) {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.selection_count, selected.size)) },
+                    navigationIcon = {
+                        IconButton(onClick = { haptics.tap(); selected = emptySet() }) {
+                            Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.selection_exit))
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = {
+                            haptics.tap()
+                            selected = ordered.orEmpty().map { it.id }.toSet()
+                        }) {
+                            Icon(Icons.Filled.DoneAll, contentDescription = stringResource(R.string.select_all))
+                        }
+                        IconButton(onClick = { haptics.tap(); confirmDeleteSelected = true }) {
+                            Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.action_delete))
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
+                    )
+                )
+            } else {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.app_name)) },
+                    actions = {
+                        IconButton(onClick = { haptics.tap(); onOpenGarden() }) {
+                            Icon(Icons.Filled.Park, contentDescription = stringResource(R.string.home_garden))
+                        }
+                        IconButton(onClick = { haptics.tap(); onOpenStats() }) {
+                            Icon(Icons.Filled.QueryStats, contentDescription = stringResource(R.string.home_stats))
+                        }
+                        IconButton(onClick = { haptics.tap(); onOpenSettings() }) {
+                            Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.home_settings))
+                        }
                     }
-                    IconButton(onClick = { haptics.tap(); onOpenSettings() }) {
-                        Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.home_settings))
-                    }
-                }
-            )
+                )
+            }
         },
         floatingActionButton = {
-            // Colores explícitos: por defecto el FAB usa primaryContainer, que sin definir
-            // se quedaba en el morado base de Material en vez de seguir al acento elegido.
-            FloatingActionButton(
-                onClick = { haptics.tap(); onAddHabit() },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            ) {
-                Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.home_add_habit))
+            if (!selectionMode) {
+                // Colores explícitos: por defecto el FAB usa primaryContainer, que sin definir
+                // se quedaba en el morado base de Material en vez de seguir al acento elegido.
+                FloatingActionButton(
+                    onClick = { haptics.tap(); onAddHabit() },
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ) {
+                    Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.home_add_habit))
+                }
             }
         }
     ) { padding ->
@@ -146,20 +198,31 @@ fun HomeScreen(
                             // La tarjeta agarrada la coloca el dedo; las demás sí animan su
                             // hueco al apartarse, que es lo que hace legible el movimiento.
                             .then(if (isDragged) Modifier else Modifier.animateItem())
-                            .reorderableItem(reorderState, habit.id, index)
+                            // Sin arrastre mientras se seleccionan varios: es lo que evita que
+                            // una pulsación larga signifique dos cosas a la vez.
+                            .then(
+                                if (selectionMode) Modifier
+                                else Modifier.reorderableItem(reorderState, habit.id, index)
+                            )
                     ) {
                         HabitCard(
                             habit = habit,
                             nowState = nowState,
                             lifted = isDragged,
+                            selectionMode = selectionMode,
+                            isSelected = habit.id in selected,
                             onClick = {
                                 // Al soltar tras arrastrar llega también un "toque"; se ignora
                                 // para no abrir el hábito que se acaba de mover.
-                                if (!reorderState.shouldIgnoreClick()) {
-                                    haptics.tap()
+                                if (reorderState.shouldIgnoreClick()) return@HabitCard
+                                haptics.tap()
+                                if (selectionMode) {
+                                    selected = if (habit.id in selected) selected - habit.id else selected + habit.id
+                                } else {
                                     onOpenHabit(habit.id)
                                 }
                             },
+                            onStartSelection = { haptics.longPress(); selected = setOf(habit.id) },
                             onReset = { haptics.confirm(); viewModel.resetHabit(habit) { error = it } },
                             onDelete = { haptics.tap(); pendingDelete = habit }
                         )
@@ -182,6 +245,20 @@ fun HomeScreen(
         )
     }
 
+    if (confirmDeleteSelected) {
+        ConfirmDialog(
+            title = stringResource(R.string.selection_delete_title, selected.size),
+            message = stringResource(R.string.selection_delete_message),
+            onConfirm = {
+                haptics.confirm()
+                viewModel.deleteHabits(selected) { error = it }
+                selected = emptySet()
+                confirmDeleteSelected = false
+            },
+            onDismiss = { confirmDeleteSelected = false }
+        )
+    }
+
     error?.let { msg ->
         ConfirmDialog(
             title = stringResource(R.string.error_title),
@@ -198,7 +275,10 @@ private fun HabitCard(
     habit: HabitEntity,
     nowState: State<Long>,
     lifted: Boolean,
+    selectionMode: Boolean,
+    isSelected: Boolean,
     onClick: () -> Unit,
+    onStartSelection: () -> Unit,
     onReset: () -> Unit,
     onDelete: () -> Unit
 ) {
@@ -209,19 +289,31 @@ private fun HabitCard(
     Card(
         modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
         onClick = onClick,
-        elevation = CardDefaults.cardElevation(defaultElevation = if (lifted) 8.dp else 1.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = if (lifted) 8.dp else 1.dp),
+        // Sólo se tocan los colores cuando la tarjeta está marcada; el resto del tiempo se
+        // deja el valor por defecto tal cual, sin copiarlo a mano.
+        colors = if (isSelected) {
+            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.16f))
+        } else {
+            CardDefaults.cardColors()
+        }
     ) {
         Column(Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                     Icon(category, contentDescription = null, modifier = Modifier.size(28.dp), tint = MaterialTheme.colorScheme.primary)
                     Text(habit.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 12.dp))
                 }
-                Box {
-                    IconButton(onClick = { menuOpen = true }) { Icon(Icons.Filled.MoreVert, contentDescription = stringResource(R.string.action_more_options)) }
-                    DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                        DropdownMenuItem(text = { Text(stringResource(R.string.home_reset_counter)) }, onClick = { menuOpen = false; onReset() })
-                        DropdownMenuItem(text = { Text(stringResource(R.string.action_delete)) }, onClick = { menuOpen = false; onDelete() })
+                if (selectionMode) {
+                    Checkbox(checked = isSelected, onCheckedChange = { onClick() })
+                } else {
+                    Box {
+                        IconButton(onClick = { menuOpen = true }) { Icon(Icons.Filled.MoreVert, contentDescription = stringResource(R.string.action_more_options)) }
+                        DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                            DropdownMenuItem(text = { Text(stringResource(R.string.select_action)) }, onClick = { menuOpen = false; onStartSelection() })
+                            DropdownMenuItem(text = { Text(stringResource(R.string.home_reset_counter)) }, onClick = { menuOpen = false; onReset() })
+                            DropdownMenuItem(text = { Text(stringResource(R.string.action_delete)) }, onClick = { menuOpen = false; onDelete() })
+                        }
                     }
                 }
             }

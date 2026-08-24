@@ -32,6 +32,10 @@ interface HabitDao {
     @Query("DELETE FROM habits")
     suspend fun deleteAll()
 
+    /** Borrado múltiple en una sola sentencia; el borrado en cascada limpia motivos e historial. */
+    @Query("DELETE FROM habits WHERE id IN (:ids)")
+    suspend fun deleteByIds(ids: List<Long>)
+
     @Query("SELECT COUNT(*) FROM habits")
     suspend fun count(): Int
 

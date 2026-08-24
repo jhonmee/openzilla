@@ -27,6 +27,12 @@ class HomeViewModel(private val context: Context, private val repository: HabitR
         }
     }
 
+    fun deleteHabits(ids: Set<Long>, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            repository.deleteHabits(ids).onFailure { onError(it.message ?: context.getString(R.string.error_delete_failed)) }
+        }
+    }
+
     /** Called once when a drag finishes, with the list exactly as the user left it. */
     fun saveOrder(orderedIds: List<Long>, onError: (String) -> Unit) {
         viewModelScope.launch {

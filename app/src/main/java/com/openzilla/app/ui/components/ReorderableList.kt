@@ -26,8 +26,13 @@ private const val LIFT_SCALE = 1.03f
 /** Franja junto a cada borde donde la lista empieza a desplazarse sola. */
 private val AUTO_SCROLL_ZONE = 72.dp
 
-/** Desplazamiento máximo por fotograma durante el autoscroll. */
-private val AUTO_SCROLL_MAX_STEP = 14.dp
+/**
+ * Velocidad máxima del autoscroll, en dp **por segundo**.
+ *
+ * Por segundo y no por fotograma: medido por fotograma, la lista corría al doble en un móvil
+ * de 120 Hz que en uno de 60, y se volvía irregular en cuanto el dispositivo bajaba de tasa.
+ */
+private val AUTO_SCROLL_MAX_SPEED = 900.dp
 
 /**
  * Drag-and-drop reordering for a `LazyColumn`, small enough to keep in the project rather
@@ -41,7 +46,7 @@ private val AUTO_SCROLL_MAX_STEP = 14.dp
 class ReorderState internal constructor(
     private val listState: LazyListState,
     private val autoScrollZonePx: Float,
-    private val autoScrollMaxStepPx: Float,
+    private val autoScrollMaxSpeedPx: Float,
     private val onMove: (from: Int, to: Int) -> Unit,
     private val onDropped: () -> Unit,
     private val onLifted: () -> Unit,
@@ -73,7 +78,16 @@ class ReorderState internal constructor(
 
     internal fun drag(deltaY: Float) {
         if (draggingKey == null) return
-        floatingCenterY += deltaY
+        // La tarjeta se queda siempre dentro de la parte visible. Sin este tope, seguir
+        // arrastrando más allá del borde acumulaba distancia invisible: al volver hacia
+        // dentro no reaccionaba hasta recuperar todo lo acumulado, y el autoscroll se
+        // quedaba clavado a tope contra un extremo.
+        val info = listState.layoutInfo
+        val half = draggingHeight / 2f
+        val lowest = info.viewportStartOffset + half
+        val highest = info.viewportEndOffset - half
+        val moved = floatingCenterY + deltaY
+        floatingCenterY = if (lowest <= highest) moved.coerceIn(lowest, highest) else moved
         swapIfNeeded()
     }
 
@@ -103,12 +117,12 @@ class ReorderState internal constructor(
         onSwapped()
     }
 
-    /**
-     * One scroll step for the current frame, or 0 when the card is comfortably inside the
-     * viewport. Speed grows with how far into the edge zone the card has been pushed, which
+/**
+     * Scroll speed in pixels per second, or 0 when the card is comfortably inside the
+     * viewport. It grows with how far into the edge zone the card has been pushed, which
      * makes short corrections easy and long journeys quick.
      */
-    private fun autoScrollStep(): Float {
+    private fun autoScrollVelocity(): Float {
         if (draggingKey == null) return 0f
         val info = listState.layoutInfo
         val top = floatingCenterY - draggingHeight / 2f
@@ -117,23 +131,32 @@ class ReorderState internal constructor(
         val end = info.viewportEndOffset.toFloat()
         return when {
             bottom > end - autoScrollZonePx ->
-                (((bottom - (end - autoScrollZonePx)) / autoScrollZonePx).coerceAtMost(1f)) * autoScrollMaxStepPx
+                (((bottom - (end - autoScrollZonePx)) / autoScrollZonePx).coerceAtMost(1f)) * autoScrollMaxSpeedPx
             top < start + autoScrollZonePx ->
-                -(((start + autoScrollZonePx - top) / autoScrollZonePx).coerceAtMost(1f)) * autoScrollMaxStepPx
+                -(((start + autoScrollZonePx - top) / autoScrollZonePx).coerceAtMost(1f)) * autoScrollMaxSpeedPx
             else -> 0f
         }
     }
 
     internal suspend fun runAutoScroll() {
+        var previousFrame = 0L
         while (draggingKey != null) {
-            val step = autoScrollStep()
+            var step = 0f
+            withFrameNanos { frame ->
+                if (previousFrame != 0L) {
+                    // Se recorta el intervalo: si el hilo se atranca un momento, al
+                    // recuperarse no debe pegar un salto proporcional a lo que tardó.
+                    val seconds = ((frame - previousFrame) / 1_000_000_000f).coerceIn(0f, 0.05f)
+                    step = autoScrollVelocity() * seconds
+                }
+                previousFrame = frame
+            }
             if (step != 0f) {
                 // scrollBy devuelve lo que realmente se pudo desplazar: al llegar al final de
                 // la lista devuelve 0 y el bucle se queda quieto en vez de forcejear.
                 listState.scrollBy(step)
                 swapIfNeeded()
             }
-            withFrameNanos { }
         }
     }
 }
@@ -153,13 +176,13 @@ fun rememberReorderState(
 
     val density = LocalDensity.current
     val zonePx = with(density) { AUTO_SCROLL_ZONE.toPx() }
-    val stepPx = with(density) { AUTO_SCROLL_MAX_STEP.toPx() }
+    val speedPx = with(density) { AUTO_SCROLL_MAX_SPEED.toPx() }
 
-    val state = remember(listState, zonePx, stepPx) {
+    val state = remember(listState, zonePx, speedPx) {
         ReorderState(
             listState = listState,
             autoScrollZonePx = zonePx,
-            autoScrollMaxStepPx = stepPx,
+            autoScrollMaxSpeedPx = speedPx,
             onMove = { from, to -> move(from, to) },
             onDropped = { dropped() },
             onLifted = { lifted() },

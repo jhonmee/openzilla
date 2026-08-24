@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Monograma "OZ". Va como vector en lugar de PNG: pesa unos cientos de bytes en vez de
+    varios KB por densidad, y sirve además como capa monocroma para los iconos temáticos de
+    Android 13. Todo el dibujo cabe en la zona segura del icono adaptativo (los 72dp
+    centrales de un lienzo de 108), así que ningún launcher le recorta nada.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- O: círculo exterior menos círculo interior, con relleno par-impar. -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M40,38 a16,16 0 1,0 0.1,0 z M40,44.5 a9.5,9.5 0 1,0 0.1,0 z" />
+
+    <!-- Z -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M60,38 L84,38 L84,45 L70,63 L84,63 L84,70 L60,70 L60,63 L74,45 L60,45 Z" />
+</vector>
