@@ -194,7 +194,7 @@
     <string name="stats_longest">Longest</string>
     <string name="stats_heatmap_title">Consistency map</string>
     <string name="stats_heatmap_hint">The last 12 weeks, one square per day.</string>
-    <string name="stats_ledger_title">The habit's ledger</string>
+    <string name="stats_ledger_title">The habit\'s ledger</string>
     <string name="stats_ledger_hint">Worked out from the weekly cost you entered when creating it.</string>
     <string name="stats_saved_current">Saved this streak</string>
     <string name="stats_saved_total">Saved in total</string>
